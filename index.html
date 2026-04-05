@@ -979,6 +979,17 @@
               </div>
             </div>
 
+            <div id="orderChatPanel" class="hidden" style="margin-top:24px;">
+              <div class="pill">Chat del pedido</div>
+              <h3 style="font-size:1.35rem; margin:14px 0 10px;">Mensajería</h3>
+              <p class="muted" id="chatOrderLabel" style="margin:0 0 14px;">Selecciona un pedido para abrir la conversación.</p>
+              <div id="chatMessages" class="cart-items"></div>
+              <div class="form-grid" style="margin-top:14px;">
+                <input class="input" id="chatInput" type="text" placeholder="Escribe tu mensaje..." />
+                <button class="btn btn-primary" id="sendChatBtn">Enviar mensaje</button>
+              </div>
+            </div>
+
             <div id="adminPanel" class="hidden" style="margin-top:24px;">
               <div class="pill">Admin</div>
               <h3 style="font-size:1.35rem; margin:14px 0 10px;">Pedidos recibidos</h3>
@@ -1082,36 +1093,20 @@
     const ordersList = document.getElementById('ordersList');
     const adminPanel = document.getElementById('adminPanel');
     const adminOrdersList = document.getElementById('adminOrdersList');
-
-    // CHAT UI
-    const orderChatPanel = document.createElement('div');
-    orderChatPanel.id = 'orderChatPanel';
-    orderChatPanel.className = 'card hidden';
-    orderChatPanel.style.marginTop = '20px';
-    orderChatPanel.innerHTML = `
-      <div style="padding:18px">
-        <div class="pill">Chat del pedido</div>
-        <h3 style="margin:14px 0 8px;">Mensajería</h3>
-        <p class="muted" style="margin:0 0 14px;">Habla directamente con el comprador o con el admin sobre este pedido.</p>
-        <div id="chatMessages" style="display:grid;gap:10px;max-height:360px;overflow:auto;padding-right:4px;"></div>
-        <div style="display:grid;gap:10px;margin-top:14px;">
-          <input id="chatInput" class="input" placeholder="Escribe tu mensaje..." />
-          <button class="btn btn-primary" id="sendChatBtn">Enviar mensaje</button>
-        </div>
-      </div>
-    `;
-    document.getElementById('route-account').appendChild(orderChatPanel);
-
+    const orderChatPanel = document.getElementById('orderChatPanel');
+    const chatOrderLabel = document.getElementById('chatOrderLabel');
     const chatMessages = document.getElementById('chatMessages');
     const chatInput = document.getElementById('chatInput');
     const sendChatBtn = document.getElementById('sendChatBtn');
 
     const cart = [];
     let currentUser = null;
+    let currentUserOrders = [];
+    let currentAdminOrders = [];
+    let selectedOrderId = null;
     let userOrdersUnsubscribe = null;
     let adminOrdersUnsubscribe = null;
-    let chatUnsub = null;
-    let currentChatOrder = null;
+    let chatUnsubscribe = null;
 
     function navigate(path) {
       const valid = routes[path] ? path : '/';
@@ -1123,7 +1118,6 @@
       Object.entries(routes).forEach(([key, section]) => {
         section.classList.toggle('hidden', key !== path);
       });
-
       navLinks.forEach(link => {
         link.classList.toggle('active', link.dataset.route === path);
       });
@@ -1160,12 +1154,10 @@
       cart.splice(index, 1);
       renderCart();
     }
-
     window.removeFromCart = removeFromCart;
 
     function renderCart() {
       cartToggle.textContent = `🛒 ${cart.length}`;
-
       if (!cart.length) {
         cartItems.innerHTML = `
           <div class="cart-item">
@@ -1190,12 +1182,12 @@
           </div>
         `).join('');
       }
-
       const total = cart.reduce((sum, item) => sum + item.price, 0);
       totalEl.textContent = `S/ ${total.toFixed(2)}`;
     }
 
     function renderUserOrders(orders) {
+      currentUserOrders = orders;
       if (!orders.length) {
         ordersList.innerHTML = `
           <div class="cart-item">
@@ -1217,8 +1209,10 @@
             <h4 style="margin:0 0 4px;">Pedido #${index + 1}</h4>
             <p class="muted" style="margin:0;font-size:.88rem;">${(order.items || []).map(item => item.name).join(', ')}</p>
             <p class="muted" style="margin:4px 0 0;font-size:.82rem;">Estado: ${order.status || 'pendiente'}</p>
-            ${order.status !== 'cancelado' && order.status !== 'realizado' ? `<button class="btn btn-danger" style="margin-top:8px;padding:8px 12px;font-size:.82rem;" onclick="markOrderCanceled('${order.id}')">Cancelar pedido</button>` : ''}
-            <button class="btn btn-secondary" style="margin-top:8px;padding:8px 12px;font-size:.82rem;" data-chat-user="${order.id}">Abrir chat</button>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;">
+              <button class="btn btn-secondary" style="padding:8px 12px;font-size:.82rem;" onclick="openChat('${order.id}', false)">Abrir chat</button>
+              ${order.status !== 'cancelado' && order.status !== 'realizado' ? `<button class="btn btn-danger" style="padding:8px 12px;font-size:.82rem;" onclick="markOrderCanceled('${order.id}')">Cancelar pedido</button>` : ''}
+            </div>
           </div>
           <strong>S/ ${Number(order.total || 0).toFixed(2)}</strong>
         </div>
@@ -1226,6 +1220,7 @@
     }
 
     function renderAdminOrders(orders) {
+      currentAdminOrders = orders;
       if (!orders.length) {
         adminOrdersList.innerHTML = `
           <div class="cart-item">
@@ -1248,19 +1243,11 @@
             <p class="muted" style="margin:0;font-size:.88rem;">${order.userName || 'Usuario'} • ${order.userEmail || 'Sin correo'}</p>
             <p class="muted" style="margin:4px 0 0;font-size:.82rem;">${(order.items || []).map(item => item.name).join(', ')}</p>
             <p class="muted" style="margin:4px 0 0;font-size:.82rem;">Estado: ${order.status || 'pendiente'}</p>
-            ${order.status !== 'cancelado' && order.status !== 'realizado' ? `<button class="btn btn-danger" style="margin-top:8px;padding:8px 12px;font-size:.82rem;" onclick="markOrderCanceled('${order.id}')">Cancelar pedido</button>` : ''}
-            ${order.status !== 'realizado' && order.status !== 'cancelado' ? `
-              <button class="btn btn-success" style="margin-top:10px;padding:8px 12px;font-size:.82rem;" onclick="markOrderCompleted('${order.id}')">
-                Pedido realizado
-              </button>
-              <button class="btn btn-danger" style="margin-top:10px;padding:8px 12px;font-size:.82rem;" onclick="markOrderCanceled('${order.id}')">
-                Pedido cancelado
-              </button>
-            ` : ''}')">
-                Pedido realizado
-              </button>
-            ` : ''}
-            <button class="btn btn-secondary" style="margin-top:8px;padding:8px 12px;font-size:.82rem;" data-chat-admin="${order.id}">Abrir chat</button>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;">
+              ${order.status !== 'realizado' && order.status !== 'cancelado' ? `<button class="btn btn-success" style="padding:8px 12px;font-size:.82rem;" onclick="markOrderCompleted('${order.id}')">Pedido realizado</button>` : ''}
+              ${order.status !== 'cancelado' && order.status !== 'realizado' ? `<button class="btn btn-danger" style="padding:8px 12px;font-size:.82rem;" onclick="markOrderCanceled('${order.id}')">Pedido cancelado</button>` : ''}
+              <button class="btn btn-secondary" style="padding:8px 12px;font-size:.82rem;" onclick="openChat('${order.id}', true)">Abrir chat</button>
+            </div>
           </div>
           <strong>S/ ${Number(order.total || 0).toFixed(2)}</strong>
         </div>
@@ -1269,32 +1256,26 @@
 
     async function markOrderCompleted(orderId) {
       try {
-        await updateDoc(doc(db, 'orders', orderId), {
-          status: 'realizado'
-        });
+        await updateDoc(doc(db, 'orders', orderId), { status: 'realizado' });
       } catch (error) {
         console.error(error);
         alert('No se pudo completar el pedido: ' + error.message);
       }
     }
-
     window.markOrderCompleted = markOrderCompleted;
 
-    async function markOrderCanceled(orderId){
-      try{
-        await updateDoc(doc(db,'orders',orderId),{
-          status:'cancelado'
-        });
-      }catch(e){
-        console.error(e);
-        alert('Error al cancelar pedido');
+    async function markOrderCanceled(orderId) {
+      try {
+        await updateDoc(doc(db, 'orders', orderId), { status: 'cancelado' });
+      } catch (error) {
+        console.error(error);
+        alert('No se pudo cancelar el pedido: ' + error.message);
       }
     }
-
     window.markOrderCanceled = markOrderCanceled;
 
-    function renderChatMessages(msgs){
-      if(!msgs.length){
+    function renderChatMessages(messages) {
+      if (!messages.length) {
         chatMessages.innerHTML = `
           <div class="cart-item">
             <div class="cart-thumb">💬</div>
@@ -1308,17 +1289,18 @@
         return;
       }
 
-      chatMessages.innerHTML = msgs.map(m => {
-        const isMine = currentUser && (m.senderEmail === currentUser.email);
-        const roleLabel = m.senderRole === 'admin' ? 'Admin' : 'Cliente';
+      chatMessages.innerHTML = messages.map(message => {
+        const isMine = currentUser && message.senderEmail === currentUser.email;
+        const roleLabel = message.senderRole === 'admin' ? 'Admin' : 'Cliente';
         const bubbleStyle = isMine
           ? 'margin-left:auto;background:linear-gradient(135deg, rgba(124,58,237,.35), rgba(91,33,182,.35));border:1px solid rgba(124,58,237,.5);'
           : 'margin-right:auto;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);';
+
         return `
           <div style="display:flex;${isMine ? 'justify-content:flex-end;' : 'justify-content:flex-start;'}">
             <div style="max-width:78%;padding:12px 14px;border-radius:18px;${bubbleStyle}">
-              <div style="font-size:.78rem;font-weight:800;margin-bottom:4px;opacity:.9;">${m.senderName || roleLabel} · ${roleLabel}</div>
-              <div style="line-height:1.5;word-break:break-word;">${m.text || ''}</div>
+              <div style="font-size:.78rem;font-weight:800;margin-bottom:4px;opacity:.9;">${message.senderName || roleLabel} · ${roleLabel}</div>
+              <div style="line-height:1.5;word-break:break-word;">${message.text || ''}</div>
             </div>
           </div>
         `;
@@ -1327,38 +1309,65 @@
       chatMessages.scrollTop = chatMessages.scrollHeight;
     }
 
-    function openChat(orderId){
-      currentChatOrder = orderId;
+    function openChat(orderId, isAdminView = false) {
+      selectedOrderId = orderId;
       orderChatPanel.classList.remove('hidden');
-      if(chatUnsub) chatUnsub();
 
-      const q = query(collection(db,'orders',orderId,'messages'), orderBy('createdAt','asc'));
-      chatUnsub = onSnapshot(q,(snap)=>{
-        const msgs = snap.docs.map(d=> ({ id:d.id, ...d.data() }));
-        renderChatMessages(msgs);
+      const source = isAdminView ? currentAdminOrders : currentUserOrders;
+      const order = source.find(item => item.id === orderId);
+      chatOrderLabel.textContent = order
+        ? `Conversación del pedido de ${order.userName || 'usuario'}${order.userEmail ? ' • ' + order.userEmail : ''}`
+        : 'Conversación del pedido';
+
+      if (chatUnsubscribe) {
+        chatUnsubscribe();
+      }
+
+      const chatQuery = query(collection(db, 'orders', orderId, 'messages'), orderBy('createdAt', 'asc'));
+      chatUnsubscribe = onSnapshot(chatQuery, (snapshot) => {
+        const messages = snapshot.docs.map(docItem => ({ id: docItem.id, ...docItem.data() }));
+        renderChatMessages(messages);
+      }, (error) => {
+        console.error(error);
+        renderChatMessages([]);
       });
     }
+    window.openChat = openChat;
 
-    sendChatBtn.addEventListener('click', async ()=>{
+    async function sendChatMessage() {
       const text = chatInput.value.trim();
-      if(!text || !currentChatOrder) return;
+      if (!selectedOrderId) {
+        alert('Primero abre un pedido para chatear.');
+        return;
+      }
+      if (!text) {
+        return;
+      }
+      if (!currentUser) {
+        alert('Debes iniciar sesión.');
+        return;
+      }
+      try {
+        await addDoc(collection(db, 'orders', selectedOrderId, 'messages'), {
+          text,
+          senderName: currentUser.displayName || currentUser.email || 'Usuario',
+          senderEmail: currentUser.email || '',
+          senderRole: currentUser.email === ADMIN_EMAIL ? 'admin' : 'user',
+          createdAt: serverTimestamp()
+        });
+        chatInput.value = '';
+        chatInput.focus();
+      } catch (error) {
+        console.error(error);
+        alert('No se pudo enviar el mensaje: ' + error.message);
+      }
+    }
 
-      await addDoc(collection(db,'orders',currentChatOrder,'messages'),{
-        text,
-        senderName: currentUser?.displayName || currentUser?.email || 'user',
-        senderEmail: currentUser?.email || '',
-        senderRole: currentUser?.email === ADMIN_EMAIL ? 'admin' : 'user',
-        createdAt: serverTimestamp()
-      });
-
-      chatInput.value='';
-      chatInput.focus();
-    });
-
-    chatInput.addEventListener('keydown', async (e)=>{
-      if(e.key === 'Enter'){
+    sendChatBtn.addEventListener('click', sendChatMessage);
+    chatInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
         e.preventDefault();
-        sendChatBtn.click();
+        sendChatMessage();
       }
     });
 
@@ -1371,6 +1380,10 @@
         adminOrdersUnsubscribe();
         adminOrdersUnsubscribe = null;
       }
+      if (chatUnsubscribe) {
+        chatUnsubscribe();
+        chatUnsubscribe = null;
+      }
     }
 
     function startOrderListeners(user) {
@@ -1379,21 +1392,16 @@
       if (!user?.email) {
         renderUserOrders([]);
         adminPanel.classList.add('hidden');
+        orderChatPanel.classList.add('hidden');
+        selectedOrderId = null;
         renderAdminOrders([]);
         return;
       }
 
       const userOrdersQuery = query(collection(db, 'orders'), where('userEmail', '==', user.email));
       userOrdersUnsubscribe = onSnapshot(userOrdersQuery, (snapshot) => {
-        const orders = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        const orders = snapshot.docs.map(docItem => ({ id: docItem.id, ...docItem.data() }));
         renderUserOrders(orders.reverse());
-
-      // attach chat button logic after render
-      setTimeout(()=>{
-        document.querySelectorAll('[data-chat-user]').forEach(btn=>{
-          btn.onclick = ()=> openChat(btn.dataset.chatUser);
-        });
-      });
       }, (error) => {
         console.error(error);
         renderUserOrders([]);
@@ -1403,14 +1411,8 @@
         adminPanel.classList.remove('hidden');
         const adminQuery = query(collection(db, 'orders'));
         adminOrdersUnsubscribe = onSnapshot(adminQuery, (snapshot) => {
-          const orders = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+          const orders = snapshot.docs.map(docItem => ({ id: docItem.id, ...docItem.data() }));
           renderAdminOrders(orders.reverse());
-
-      setTimeout(()=>{
-        document.querySelectorAll('[data-chat-admin]').forEach(btn=>{
-          btn.onclick = ()=> openChat(btn.dataset.chatAdmin);
-        });
-      });
         }, (error) => {
           console.error(error);
           renderAdminOrders([]);
@@ -1442,7 +1444,6 @@
         alert('Tu carrito está vacío.');
         return;
       }
-
       if (!currentUser) {
         alert('Primero inicia sesión para registrar el pedido.');
         navigate('/login');
@@ -1460,7 +1461,6 @@
           status: 'pendiente',
           createdAt: serverTimestamp()
         });
-
         cart.length = 0;
         renderCart();
         alert('Pedido registrado correctamente.');
@@ -1472,7 +1472,6 @@
 
     function setUser(user) {
       currentUser = user;
-
       if (user) {
         const displayName = user.displayName || user.email?.split('@')[0] || 'Usuario';
         accountName.textContent = displayName;
@@ -1487,19 +1486,16 @@
         registerMessage.textContent = 'Completa tus datos para crear una cuenta real.';
         accountShortcut.textContent = 'Acceder';
       }
-
       startOrderListeners(user);
     }
 
     loginBtn.addEventListener('click', async () => {
       const email = document.getElementById('loginEmail').value.trim();
       const password = document.getElementById('loginPassword').value.trim();
-
       if (!email || !password) {
         alert('Completa correo y contraseña.');
         return;
       }
-
       try {
         await signInWithEmailAndPassword(auth, email, password);
         navigate('/account');
@@ -1513,12 +1509,10 @@
       const name = document.getElementById('registerName').value.trim();
       const email = document.getElementById('registerEmail').value.trim();
       const password = document.getElementById('registerPassword').value.trim();
-
       if (!name || !email || !password) {
         alert('Completa nombre, correo y contraseña.');
         return;
       }
-
       try {
         const cred = await createUserWithEmailAndPassword(auth, email, password);
         await updateProfile(cred.user, { displayName: name });
@@ -1546,6 +1540,7 @@
       try {
         await signOut(auth);
         stopOrderListeners();
+        selectedOrderId = null;
         navigate('/');
       } catch (error) {
         console.error(error);
@@ -1567,6 +1562,7 @@
     renderCart();
     renderUserOrders([]);
     renderAdminOrders([]);
+    renderChatMessages([]);
     renderRoute(location.pathname in routes ? location.pathname : '/');
   </script>
 </body>
