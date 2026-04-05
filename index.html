@@ -979,10 +979,7 @@
               </div>
             </div>
 
-            <div id="orderChatPanel" class="hidden" style="margin-top:24px;">
-              <div class="pill">Chat del pedido</div>
-              <h3 style="font-size:1.35rem; margin:14px 0 10px;">Mensajería con el comprador</h3>
-              <p class="muted" id="chatOrderLabel" style
+            <div id="adminPanel" class="hidden" style="margin-top:24px;">
               <div class="pill">Admin</div>
               <h3 style="font-size:1.35rem; margin:14px 0 10px;">Pedidos recibidos</h3>
               <p class="muted" style="margin:0 0 14px;">Aquí se registran todos los pedidos enviados por los usuarios.</p>
@@ -1031,7 +1028,8 @@
       onSnapshot,
       serverTimestamp,
       doc,
-      updateDoc
+      updateDoc,
+      orderBy
     } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
 
     const firebaseConfig = {
@@ -1085,10 +1083,35 @@
     const adminPanel = document.getElementById('adminPanel');
     const adminOrdersList = document.getElementById('adminOrdersList');
 
+    // CHAT UI
+    const orderChatPanel = document.createElement('div');
+    orderChatPanel.id = 'orderChatPanel';
+    orderChatPanel.className = 'card hidden';
+    orderChatPanel.style.marginTop = '20px';
+    orderChatPanel.innerHTML = `
+      <div style="padding:18px">
+        <div class="pill">Chat del pedido</div>
+        <h3 style="margin:14px 0 8px;">Mensajería</h3>
+        <p class="muted" style="margin:0 0 14px;">Habla directamente con el comprador o con el admin sobre este pedido.</p>
+        <div id="chatMessages" style="display:grid;gap:10px;max-height:360px;overflow:auto;padding-right:4px;"></div>
+        <div style="display:grid;gap:10px;margin-top:14px;">
+          <input id="chatInput" class="input" placeholder="Escribe tu mensaje..." />
+          <button class="btn btn-primary" id="sendChatBtn">Enviar mensaje</button>
+        </div>
+      </div>
+    `;
+    document.getElementById('route-account').appendChild(orderChatPanel);
+
+    const chatMessages = document.getElementById('chatMessages');
+    const chatInput = document.getElementById('chatInput');
+    const sendChatBtn = document.getElementById('sendChatBtn');
+
     const cart = [];
     let currentUser = null;
     let userOrdersUnsubscribe = null;
     let adminOrdersUnsubscribe = null;
+    let chatUnsub = null;
+    let currentChatOrder = null;
 
     function navigate(path) {
       const valid = routes[path] ? path : '/';
@@ -1247,6 +1270,62 @@
 
     window.markOrderCompleted = markOrderCompleted;
 
+    function renderChatMessages(msgs){
+      if(!msgs.length){
+        chatMessages.innerHTML = `
+          <div class="cart-item">
+            <div class="cart-thumb">💬</div>
+            <div>
+              <h4 style="margin:0 0 4px;">Todavía no hay mensajes</h4>
+              <p class="muted" style="margin:0;font-size:.88rem;">Escribe el primero para empezar la conversación.</p>
+            </div>
+            <strong>—</strong>
+          </div>
+        `;
+        return;
+      }
+
+      chatMessages.innerHTML = msgs.map(m => {
+        const isMine = currentUser && (m.senderEmail === currentUser.email);
+        const roleLabel = m.senderRole === 'admin' ? 'Admin' : 'Cliente';
+        const bubbleStyle = isMine
+          ? 'margin-left:auto;background:linear-gradient(135deg, rgba(124,58,237,.35), rgba(91,33,182,.35));border:1px solid rgba(124,58,237,.5);'
+          : 'margin-right:auto;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);';
+        return `
+          <div style="display:flex;${isMine ? 'justify-content:flex-end;' : 'justify-content:flex-start;'}">
+            <div style="max-width:78%;padding:12px 14px;border-radius:18px;${bubbleStyle}">
+              <div style="font-size:.78rem;font-weight:800;margin-bottom:4px;opacity:.9;">${m.senderName || roleLabel} · ${roleLabel}</div>
+              <div style="line-height:1.5;word-break:break-word;">${m.text || ''}</div>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    function openChat(orderId){
+      currentChatOrder = orderId;
+      orderChatPanel.classList.remove('hidden');
+      if(chatUnsub) chatUnsub();
+
+      const q = query(collection(db,'orders',orderId,'messages'), orderBy('createdAt','asc'));
+      chatUnsub = onSnapshot(q,(snap)=>{
+        const msgs = snap.docs.map(d=> ({ id:d.id, ...d.data() }));
+        renderChatMessages(msgs);
+      });
+    }
+
+    sendChatBtn.addEventListener('click', async ()=>{
+      const text = chatInput.value.trim();
+      if(!text || !currentChatOrder) return;
+
+      await addDoc(collection(db,'orders',currentChatOrder,'messages'),{
+        text,
+        senderName: currentUser?.displayName || currentUser?.email || 'user',
+        senderEmail: currentUser?.email || '',
+        senderRol
+
     function stopOrderListeners() {
       if (userOrdersUnsubscribe) {
         userOrdersUnsubscribe();
@@ -1272,6 +1351,13 @@
       userOrdersUnsubscribe = onSnapshot(userOrdersQuery, (snapshot) => {
         const orders = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         renderUserOrders(orders.reverse());
+
+      // attach chat button logic after render
+      setTimeout(()=>{
+        document.querySelectorAll('[data-chat-user]').forEach(btn=>{
+          btn.onclick = ()=> openChat(btn.dataset.chatUser);
+        });
+      });
       }, (error) => {
         console.error(error);
         renderUserOrders([]);
@@ -1283,6 +1369,12 @@
         adminOrdersUnsubscribe = onSnapshot(adminQuery, (snapshot) => {
           const orders = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
           renderAdminOrders(orders.reverse());
+
+      setTimeout(()=>{
+        document.querySelectorAll('[data-chat-admin]').forEach(btn=>{
+          btn.onclick = ()=> openChat(btn.dataset.chatAdmin);
+        });
+      });
         }, (error) => {
           console.error(error);
           renderAdminOrders([]);
