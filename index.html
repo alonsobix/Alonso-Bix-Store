@@ -572,6 +572,57 @@
       color: var(--muted);
     }
 
+    .auth-modal {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 60;
+      padding: 20px;
+    }
+
+    .auth-modal.open {
+      display: flex;
+    }
+
+    .auth-backdrop {
+      position: absolute;
+      inset: 0;
+      background: rgba(5,7,12,.72);
+      backdrop-filter: blur(8px);
+    }
+
+    .auth-dialog {
+      position: relative;
+      z-index: 1;
+      width: min(540px, 100%);
+      padding: 24px;
+      border-radius: 26px;
+      background: linear-gradient(180deg, #171b25, #11141c);
+    }
+
+    .auth-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .auth-tabs {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
+
+    .auth-forms {
+      display: grid;
+      gap: 14px;
+      margin-bottom: 12px;
+    }
+
     .footer-wrap {
       display: flex;
       justify-content: space-between;
@@ -620,7 +671,8 @@
       <div class="nav-actions">
         <button class="nav-btn" title="Favoritos">❤</button>
         <button class="nav-btn" title="Notificaciones">🔔</button>
-        <a class="btn btn-primary" href="#catalogo">Explorar</a>
+        <a class="btn btn-secondary" href="#panelCuenta">Iniciar sesión</a>
+        <button class="btn btn-primary" id="openRegisterModal">Registrarse</button>
       </div>
     </div>
   </header>
@@ -951,8 +1003,61 @@
     </div>
   </footer>
 
+  <div class="auth-modal" id="authModal" aria-hidden="true">
+    <div class="auth-backdrop" id="authBackdrop"></div>
+    <div class="auth-dialog card">
+      <div class="auth-top">
+        <div>
+          <div class="chip">Acceso</div>
+          <h3 class="panel-title" id="authTitle">Crear cuenta</h3>
+          <p class="panel-copy" id="authText">Separa login y registro en una capa aparte, más ordenada y más parecida al flujo de un marketplace serio.</p>
+        </div>
+        <button class="nav-btn" id="closeAuthModal" title="Cerrar">✕</button>
+      </div>
+
+      <div class="auth-tabs">
+        <button class="filter active" id="tabRegister" type="button">Registrarse</button>
+        <button class="filter" id="tabLogin" type="button">Iniciar sesión</button>
+      </div>
+
+      <div class="auth-forms">
+        <div class="auth-pane" id="registerPane">
+          <div class="stack">
+            <input class="field" id="registerName" type="text" placeholder="Nombre de usuario" />
+            <input class="field" id="registerEmail" type="email" placeholder="Correo electrónico" />
+            <input class="field" id="registerPassword" type="password" placeholder="Contraseña" />
+            <button class="btn btn-primary" id="registerModalBtn" type="button">Crear cuenta</button>
+          </div>
+        </div>
+
+        <div class="auth-pane" id="loginPane" style="display:none;">
+          <div class="stack">
+            <input class="field" id="loginEmailModal" type="email" placeholder="Correo electrónico" />
+            <input class="field" id="loginPasswordModal" type="password" placeholder="Contraseña" />
+            <button class="btn btn-primary" id="loginModalBtn" type="button">Entrar</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="muted" id="authModalStatus">Todavía no has iniciado sesión.</div>
+    </div>
+  </div>
+
   <script>
-    const filters = document.querySelectorAll('.filter');
+    const filters = document.querySelectorAll('.filter[data-filter]');
+    const authModal = document.getElementById('authModal');
+    const authBackdrop = document.getElementById('authBackdrop');
+    const openRegisterModal = document.getElementById('openRegisterModal');
+    const closeAuthModal = document.getElementById('closeAuthModal');
+    const tabRegister = document.getElementById('tabRegister');
+    const tabLogin = document.getElementById('tabLogin');
+    const registerPane = document.getElementById('registerPane');
+    const loginPane = document.getElementById('loginPane');
+    const authTitle = document.getElementById('authTitle');
+    const authText = document.getElementById('authText');
+    const authModalStatus = document.getElementById('authModalStatus');
+    const registerModalBtn = document.getElementById('registerModalBtn');
+    const loginModalBtn = document.getElementById('loginModalBtn');
     const products = document.querySelectorAll('.product');
     const searchInput = document.getElementById('searchInput');
     const addToCartButtons = document.querySelectorAll('.add-to-cart');
@@ -1043,7 +1148,60 @@
 
     function setStatus(text) {
       document.getElementById('loginStatus').textContent = text;
+      authModalStatus.textContent = text;
     }
+
+    function openModal(mode = 'register') {
+      authModal.classList.add('open');
+      authModal.setAttribute('aria-hidden', 'false');
+      switchMode(mode);
+    }
+
+    function closeModal() {
+      authModal.classList.remove('open');
+      authModal.setAttribute('aria-hidden', 'true');
+    }
+
+    function switchMode(mode) {
+      const isRegister = mode === 'register';
+      registerPane.style.display = isRegister ? 'block' : 'none';
+      loginPane.style.display = isRegister ? 'none' : 'block';
+      tabRegister.classList.toggle('active', isRegister);
+      tabLogin.classList.toggle('active', !isRegister);
+      authTitle.textContent = isRegister ? 'Crear cuenta' : 'Iniciar sesión';
+      authText.textContent = isRegister
+        ? 'Registro separado en un modal aparte, como flujo independiente.'
+        : 'Ingreso limpio y rápido, sin mezclarlo con el catálogo.';
+    }
+
+    openRegisterModal.addEventListener('click', () => openModal('register'));
+    closeAuthModal.addEventListener('click', closeModal);
+    authBackdrop.addEventListener('click', closeModal);
+    tabRegister.addEventListener('click', () => switchMode('register'));
+    tabLogin.addEventListener('click', () => switchMode('login'));
+
+    document.querySelector('a[href="#panelCuenta"]').addEventListener('click', (e) => {
+      e.preventDefault();
+      openModal('login');
+    });
+
+    registerModalBtn.addEventListener('click', () => {
+      const email = document.getElementById('registerEmail').value.trim();
+      const pass = document.getElementById('registerPassword').value.trim();
+      const name = document.getElementById('registerName').value.trim();
+      if (!name || !email || !pass) return alert('Completa nombre, correo y contraseña.');
+      setStatus(`Cuenta creada para: ${name} (${email})`);
+      closeModal();
+      alert('Demo visual: conecta tu Firebase si quieres registro real.');
+    });
+
+    loginModalBtn.addEventListener('click', () => {
+      const email = document.getElementById('loginEmailModal').value.trim();
+      const pass = document.getElementById('loginPasswordModal').value.trim();
+      if (!email || !pass) return alert('Completa correo y contraseña.');
+      setStatus(`Sesión iniciada como: ${email}`);
+      closeModal();
+    });
 
     window.register = () => {
       const email = document.getElementById('email').value.trim();
