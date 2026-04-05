@@ -109,7 +109,7 @@
       align-items: center;
     }
 
-    .hero-card, .product-card, .cart-box, .info-box, .login-box {
+    .hero-card, .product-card, .cart-box, .info-box {
       background: rgba(24,24,33,.9);
       border: 1px solid var(--border);
       border-radius: var(--radius);
@@ -337,165 +337,261 @@
       font-weight: 800;
     }
 
-    /* LOGIN MEJORADO */
-    .login-box {
-      max-width: 460px;
-      margin: 20px auto 40px;
-      padding: 28px;
+    /* LOGIN PREMIUM */
+    .login-section {
+      min-height: 760px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 0 70px;
       position: relative;
-      overflow: hidden;
+    }
+
+    .premium-login {
+      width: 100%;
+      max-width: 460px;
+      padding: 34px 34px 26px;
+      border-radius: 34px;
+      position: relative;
+      background: linear-gradient(180deg, rgba(25,25,34,.96), rgba(18,18,28,.98));
+      border: 1px solid rgba(255,255,255,.07);
+      box-shadow:
+        0 30px 70px rgba(0,0,0,.45),
+        inset 0 1px 0 rgba(255,255,255,.03);
+    }
+
+    .premium-login::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: 34px;
+      pointer-events: none;
       background:
-        radial-gradient(circle at top right, rgba(139,92,246,.20), transparent 35%),
-        rgba(24,24,33,.96);
+        radial-gradient(circle at top left, rgba(255,255,255,.05), transparent 28%),
+        radial-gradient(circle at bottom right, rgba(139,92,246,.08), transparent 32%);
     }
 
-    .login-header {
-      text-align: center;
-      margin-bottom: 18px;
+    .login-close {
+      position: absolute;
+      top: 18px;
+      right: 18px;
+      width: 38px;
+      height: 38px;
+      border: 0;
+      border-radius: 50%;
+      background: transparent;
+      color: #8d8d9f;
+      font-size: 2rem;
+      line-height: 1;
+      cursor: pointer;
+      z-index: 2;
     }
 
-    .login-header h2 {
-      margin: 0 0 8px;
-      font-size: 1.8rem;
+    .premium-login-header {
+      margin-bottom: 26px;
+      position: relative;
+      z-index: 1;
     }
 
-    .login-header p {
+    .premium-login-header h2 {
       margin: 0;
-      color: var(--muted);
-      font-size: .95rem;
-      line-height: 1.5;
+      font-size: 3rem;
+      line-height: .95;
+      font-weight: 900;
+      letter-spacing: -.5px;
+      color: #fff;
+      text-transform: uppercase;
     }
 
-    .auth-switch {
+    .premium-login-header h2 span {
+      color: #7d7d86;
+    }
+
+    .premium-tabs {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 8px;
-      background: rgba(255,255,255,.04);
-      border: 1px solid rgba(255,255,255,.06);
-      border-radius: 14px;
+      margin-bottom: 20px;
+      background: rgba(255,255,255,.03);
+      border: 1px solid rgba(255,255,255,.05);
+      border-radius: 18px;
       padding: 6px;
-      margin-bottom: 18px;
+      position: relative;
+      z-index: 1;
     }
 
-    .auth-tab {
+    .premium-tab {
       border: 0;
-      cursor: pointer;
+      height: 48px;
+      border-radius: 14px;
       background: transparent;
-      color: var(--muted);
-      font-weight: 700;
-      padding: 12px 10px;
-      border-radius: 10px;
-      transition: .25s ease;
+      color: #9f9fb0;
+      font-weight: 800;
+      cursor: pointer;
+      text-transform: uppercase;
+      letter-spacing: .6px;
     }
 
-    .auth-tab.active {
-      background: linear-gradient(135deg, var(--accent), #6d28d9);
-      color: white;
-      box-shadow: var(--shadow);
+    .premium-tab.active {
+      background: #e92222;
+      color: #fff;
+      box-shadow: 0 12px 24px rgba(233,34,34,.3);
     }
 
-    .input-group {
-      margin-bottom: 14px;
-    }
-
-    .input-label {
-      display: block;
-      margin-bottom: 8px;
-      font-size: .92rem;
-      color: #e8e8f2;
-      font-weight: 700;
-    }
-
-    .login-box input {
-      width: 100%;
-      padding: 13px 14px;
-      border-radius: 12px;
-      border: 1px solid var(--border);
-      background: #11111b;
-      color: white;
-      outline: none;
-      transition: border-color .2s ease, box-shadow .2s ease, transform .2s ease;
-    }
-
-    .login-box input:focus {
-      border-color: var(--accent);
-      box-shadow: 0 0 0 4px rgba(139,92,246,.16);
-      transform: translateY(-1px);
-    }
-
-    .login-row {
+    .premium-field {
+      height: 64px;
+      border-radius: 18px;
+      background: #09090d;
+      border: 1px solid rgba(255,255,255,.06);
       display: flex;
       align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      margin: 4px 0 18px;
-      flex-wrap: wrap;
-    }
-
-    .remember-me {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      color: var(--muted);
-      font-size: .92rem;
-    }
-
-    .remember-me input {
-      width: auto;
-      margin: 0;
-      accent-color: var(--accent);
-    }
-
-    .login-link {
-      color: #c4b5fd;
-      font-size: .92rem;
-    }
-
-    .login-actions {
-      display: grid;
-      gap: 10px;
-    }
-
-    .login-main-btn {
-      width: 100%;
-      padding: 14px 18px;
-      font-size: 1rem;
-    }
-
-    .logout-btn {
-      width: 100%;
-    }
-
-    .login-divider {
+      gap: 14px;
+      padding: 0 18px;
+      margin-bottom: 16px;
       position: relative;
-      text-align: center;
-      margin: 6px 0;
-      color: var(--muted);
-      font-size: .88rem;
+      z-index: 1;
     }
 
-    .login-divider::before,
-    .login-divider::after {
+    .premium-icon {
+      width: 24px;
+      text-align: center;
+      font-size: 1rem;
+      opacity: .7;
+    }
+
+    .premium-field input {
+      width: 100%;
+      border: 0;
+      outline: none;
+      background: transparent;
+      color: #fff;
+      font-size: .98rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .6px;
+    }
+
+    .premium-field input::placeholder {
+      color: #8e8e9e;
+    }
+
+    .premium-submit {
+      width: 100%;
+      height: 58px;
+      border: 0;
+      border-radius: 18px;
+      background: #e92222;
+      color: #fff;
+      font-size: 1rem;
+      font-weight: 900;
+      letter-spacing: .8px;
+      cursor: pointer;
+      margin-top: 6px;
+      box-shadow: 0 16px 30px rgba(233,34,34,.28);
+      text-transform: uppercase;
+      position: relative;
+      z-index: 1;
+    }
+
+    .premium-divider {
+      margin: 26px 0 22px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      color: #5f6070;
+      font-size: .78rem;
+      font-weight: 800;
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+      position: relative;
+      z-index: 1;
+    }
+
+    .premium-divider::before,
+    .premium-divider::after {
       content: "";
-      position: absolute;
-      top: 50%;
-      width: 38%;
+      flex: 1;
       height: 1px;
       background: rgba(255,255,255,.08);
     }
 
-    .login-divider::before { left: 0; }
-    .login-divider::after { right: 0; }
+    .premium-google {
+      width: 100%;
+      height: 58px;
+      border: 0;
+      border-radius: 18px;
+      background: #26262f;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      font-weight: 800;
+      letter-spacing: .5px;
+      cursor: pointer;
+      text-transform: uppercase;
+      position: relative;
+      z-index: 1;
+    }
+
+    .google-g {
+      display: inline-grid;
+      place-items: center;
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      background: #fff;
+      color: #ea4335;
+      font-weight: 900;
+      font-family: Arial, sans-serif;
+    }
+
+    .premium-switch-text {
+      margin: 26px 0 12px;
+      text-align: center;
+      color: #5f6070;
+      font-size: .82rem;
+      font-weight: 800;
+      letter-spacing: .8px;
+      text-transform: uppercase;
+      position: relative;
+      z-index: 1;
+    }
+
+    .premium-switch-text button {
+      background: none;
+      border: 0;
+      color: #fff;
+      font-weight: 900;
+      cursor: pointer;
+      margin-left: 6px;
+    }
+
+    .premium-logout {
+      width: 100%;
+      height: 52px;
+      border-radius: 18px;
+      border: 1px solid rgba(255,255,255,.08);
+      background: transparent;
+      color: #fff;
+      font-weight: 800;
+      cursor: pointer;
+      margin-bottom: 12px;
+      position: relative;
+      z-index: 1;
+    }
 
     .login-status {
-      margin-top: 14px;
-      color: var(--muted);
-      font-size: .95rem;
+      margin-top: 0;
+      padding: 14px 16px;
+      border-radius: 16px;
+      background: rgba(255,255,255,.04);
+      border: 1px solid rgba(255,255,255,.05);
+      color: #c8c8d3;
       text-align: center;
-      padding: 12px 14px;
-      background: rgba(255,255,255,.03);
-      border: 1px solid rgba(255,255,255,.06);
-      border-radius: 12px;
+      font-size: .95rem;
+      position: relative;
+      z-index: 1;
     }
 
     .cart-layout {
@@ -611,13 +707,19 @@
         grid-template-columns: 1fr;
       }
 
-      .login-box {
-        padding: 20px;
+      .premium-login {
+        padding: 26px 20px 22px;
+        border-radius: 26px;
       }
 
-      .login-divider::before,
-      .login-divider::after {
-        width: 32%;
+      .premium-login-header h2 {
+        font-size: 2.25rem;
+      }
+
+      .premium-field,
+      .premium-submit,
+      .premium-google {
+        height: 54px;
       }
     }
   </style>
@@ -725,47 +827,55 @@
       </div>
     </section>
 
-    <section id="login">
-      <div class="login-box">
-        <div class="login-header">
-          <h2 id="authTitle">Bienvenido</h2>
-          <p id="authSubtitle">Ingresa a tu cuenta para continuar con tus pedidos.</p>
+    <section id="login" class="login-section">
+      <div class="premium-login">
+        <button class="login-close" type="button" aria-label="Cerrar">×</button>
+
+        <div class="premium-login-header">
+          <h2 id="authTitle">ÚNETE <span>PREMIUM</span></h2>
         </div>
 
-        <div class="auth-switch">
-          <button class="auth-tab active" id="tabLogin" type="button">Iniciar sesión</button>
-          <button class="auth-tab" id="tabRegister" type="button">Registrarse</button>
+        <div class="premium-tabs">
+          <button class="premium-tab active" id="tabRegister" type="button">Crear cuenta</button>
+          <button class="premium-tab" id="tabLogin" type="button">Inicia sesión</button>
         </div>
 
-        <div class="input-group">
-          <label class="input-label" for="email">Correo electrónico</label>
-          <input type="email" id="email" placeholder="tucorreo@email.com">
+        <div class="premium-field" id="usernameWrap">
+          <span class="premium-icon">👤</span>
+          <input type="text" id="username" placeholder="NOMBRE DE USUARIO">
         </div>
 
-        <div class="input-group">
-          <label class="input-label" for="password">Contraseña</label>
-          <input type="password" id="password" placeholder="Ingresa tu contraseña">
+        <div class="premium-field">
+          <span class="premium-icon">✉</span>
+          <input type="email" id="email" placeholder="CORREO ELECTRÓNICO">
         </div>
 
-        <div class="login-row">
-          <label class="remember-me">
-            <input type="checkbox" id="rememberSession">
-            <span>Recordarme</span>
-          </label>
-          <a href="javascript:void(0)" class="login-link" id="helperText">Accede rápido y seguro</a>
+        <div class="premium-field">
+          <span class="premium-icon">🔑</span>
+          <input type="password" id="password" placeholder="CONTRASEÑA">
         </div>
 
-        <div class="login-actions">
-          <button class="btn btn-primary login-main-btn" id="authActionBtn" type="button">
-            Iniciar sesión
-          </button>
+        <button class="premium-submit" id="authActionBtn" type="button">
+          CREAR CUENTA
+        </button>
 
-          <div class="login-divider">o</div>
-
-          <button class="btn btn-secondary logout-btn" onclick="logout()" type="button">
-            Cerrar sesión
-          </button>
+        <div class="premium-divider">
+          <span>O CONTINÚA CON</span>
         </div>
+
+        <button class="premium-google" type="button" id="googleLoginBtn">
+          <span class="google-g">G</span>
+          <span>GOOGLE ACCOUNT</span>
+        </button>
+
+        <p class="premium-switch-text" id="switchText">
+          ¿YA ERES MIEMBRO?
+          <button type="button" id="switchModeBtn">Inicia Sesión</button>
+        </p>
+
+        <button class="premium-logout" onclick="logout()" type="button">
+          Cerrar sesión
+        </button>
 
         <div class="login-status" id="loginStatus">No has iniciado sesión.</div>
       </div>
@@ -894,7 +1004,9 @@
       createUserWithEmailAndPassword,
       signInWithEmailAndPassword,
       signOut,
-      onAuthStateChanged
+      onAuthStateChanged,
+      GoogleAuthProvider,
+      signInWithPopup
     } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
     const firebaseConfig = {
@@ -909,46 +1021,69 @@
 
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
+    const provider = new GoogleAuthProvider();
+
     const loginStatus = document.getElementById("loginStatus");
+    const googleLoginBtn = document.getElementById("googleLoginBtn");
 
-    const tabLogin = document.getElementById("tabLogin");
     const tabRegister = document.getElementById("tabRegister");
-    const authTitle = document.getElementById("authTitle");
-    const authSubtitle = document.getElementById("authSubtitle");
+    const tabLogin = document.getElementById("tabLogin");
     const authActionBtn = document.getElementById("authActionBtn");
-    const helperText = document.getElementById("helperText");
+    const authTitle = document.getElementById("authTitle");
+    const switchText = document.getElementById("switchText");
+    const usernameWrap = document.getElementById("usernameWrap");
+    const loginClose = document.querySelector(".login-close");
 
-    let authMode = "login";
+    let authMode = "register";
+
+    function bindSwitchButton() {
+      const btn = document.getElementById("switchModeBtn");
+      if (btn) {
+        btn.onclick = () => {
+          setAuthMode(authMode === "register" ? "login" : "register");
+        };
+      }
+    }
 
     function setAuthMode(mode) {
       authMode = mode;
 
-      if (mode === "login") {
-        tabLogin.classList.add("active");
-        tabRegister.classList.remove("active");
-        authTitle.textContent = "Bienvenido";
-        authSubtitle.textContent = "Ingresa a tu cuenta para continuar con tus pedidos.";
-        authActionBtn.textContent = "Iniciar sesión";
-        helperText.textContent = "Accede rápido y seguro";
-      } else {
+      if (mode === "register") {
         tabRegister.classList.add("active");
         tabLogin.classList.remove("active");
-        authTitle.textContent = "Crea tu cuenta";
-        authSubtitle.textContent = "Regístrate para guardar tu progreso y comprar más rápido.";
-        authActionBtn.textContent = "Crear cuenta";
-        helperText.textContent = "Registro simple y rápido";
+        authTitle.innerHTML = 'ÚNETE <span>PREMIUM</span>';
+        authActionBtn.textContent = "CREAR CUENTA";
+        switchText.innerHTML = '¿YA ERES MIEMBRO?<button type="button" id="switchModeBtn">Inicia Sesión</button>';
+        usernameWrap.style.display = "flex";
+      } else {
+        tabLogin.classList.add("active");
+        tabRegister.classList.remove("active");
+        authTitle.innerHTML = 'HOLA <span>DE NUEVO</span>';
+        authActionBtn.textContent = "INICIAR SESIÓN";
+        switchText.innerHTML = '¿NO TIENES CUENTA?<button type="button" id="switchModeBtn">Regístrate</button>';
+        usernameWrap.style.display = "none";
       }
+
+      bindSwitchButton();
     }
 
-    tabLogin.addEventListener("click", () => setAuthMode("login"));
     tabRegister.addEventListener("click", () => setAuthMode("register"));
+    tabLogin.addEventListener("click", () => setAuthMode("login"));
 
     authActionBtn.addEventListener("click", async () => {
-      if (authMode === "login") {
-        await login();
-      } else {
+      if (authMode === "register") {
         await register();
+      } else {
+        await login();
       }
+    });
+
+    googleLoginBtn.addEventListener("click", async () => {
+      await loginWithGoogle();
+    });
+
+    loginClose.addEventListener("click", () => {
+      document.getElementById("login").style.display = "none";
     });
 
     window.register = async () => {
@@ -985,6 +1120,15 @@
       }
     };
 
+    window.loginWithGoogle = async () => {
+      try {
+        await signInWithPopup(auth, provider);
+        alert("Sesión iniciada con Google.");
+      } catch (e) {
+        alert(e.message);
+      }
+    };
+
     window.logout = async () => {
       try {
         await signOut(auth);
@@ -1001,6 +1145,8 @@
         loginStatus.textContent = "No has iniciado sesión.";
       }
     });
+
+    setAuthMode("register");
   </script>
 </body>
 </html>
