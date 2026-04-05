@@ -921,18 +921,14 @@
             <section class="panel card" id="panelCuenta">
               <div class="chip">Mi cuenta</div>
               <h3 class="panel-title">Acceso rápido</h3>
-              <p class="panel-copy">Ahora el acceso queda solo como entrada rápida. El registro completo está únicamente en el modal aparte.</p>
-              <div class="login-form">
-                <input class="field" id="email" type="email" placeholder="Correo electrónico" />
-                <input class="field" id="password" type="password" placeholder="Contraseña" />
-                <div class="stack">
-                  <button class="btn btn-primary" onclick="login()">Iniciar sesión</button>
-                  <button class="btn btn-secondary" id="googleLoginBtn" type="button">Entrar con Google</button>
-                  <button class="btn btn-secondary" onclick="logout()">Cerrar sesión</button>
-                </div>
-                <button class="btn btn-secondary" id="openRegisterFromPanel" type="button">Crear cuenta aparte</button>
-                <div class="muted" id="loginStatus">No has iniciado sesión.</div>
+              <p class="panel-copy">El acceso ahora se maneja únicamente desde el modal superior para mantener el diseño limpio.</p>
+
+              <div class="stack" style="margin-top:14px;">
+                <button class="btn btn-primary" onclick="openModal('login')">Iniciar sesión</button>
+                <button class="btn btn-secondary" onclick="openModal('register')">Crear cuenta</button>
               </div>
+
+              <div class="muted" id="loginStatus">No has iniciado sesión.</div>
             </section>
 
             <section class="panel card" id="carritoPanel">
