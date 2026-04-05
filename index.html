@@ -921,15 +921,16 @@
             <section class="panel card" id="panelCuenta">
               <div class="chip">Mi cuenta</div>
               <h3 class="panel-title">Acceso rápido</h3>
-              <p class="panel-copy">Separé el login del catálogo para que el flujo se vea más serio y mucho más limpio.</p>
+              <p class="panel-copy">Ahora el acceso queda solo como entrada rápida. El registro completo está únicamente en el modal aparte.</p>
               <div class="login-form">
                 <input class="field" id="email" type="email" placeholder="Correo electrónico" />
                 <input class="field" id="password" type="password" placeholder="Contraseña" />
                 <div class="stack">
-                  <button class="btn btn-primary" onclick="register()">Registrarse</button>
-                  <button class="btn btn-secondary" onclick="login()">Iniciar sesión</button>
+                  <button class="btn btn-primary" onclick="login()">Iniciar sesión</button>
+                  <button class="btn btn-secondary" id="googleLoginBtn" type="button">Entrar con Google</button>
                   <button class="btn btn-secondary" onclick="logout()">Cerrar sesión</button>
                 </div>
+                <button class="btn btn-secondary" id="openRegisterFromPanel" type="button">Crear cuenta aparte</button>
                 <div class="muted" id="loginStatus">No has iniciado sesión.</div>
               </div>
             </section>
@@ -1027,6 +1028,7 @@
             <input class="field" id="registerEmail" type="email" placeholder="Correo electrónico" />
             <input class="field" id="registerPassword" type="password" placeholder="Contraseña" />
             <button class="btn btn-primary" id="registerModalBtn" type="button">Crear cuenta</button>
+            <button class="btn btn-secondary" id="googleRegisterBtn" type="button">Continuar con Google</button>
           </div>
         </div>
 
@@ -1035,6 +1037,7 @@
             <input class="field" id="loginEmailModal" type="email" placeholder="Correo electrónico" />
             <input class="field" id="loginPasswordModal" type="password" placeholder="Contraseña" />
             <button class="btn btn-primary" id="loginModalBtn" type="button">Entrar</button>
+            <button class="btn btn-secondary" id="googleLoginModalBtn" type="button">Entrar con Google</button>
           </div>
         </div>
       </div>
@@ -1043,7 +1046,34 @@
     </div>
   </div>
 
-  <script>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import {
+      getAuth,
+      GoogleAuthProvider,
+      createUserWithEmailAndPassword,
+      signInWithEmailAndPassword,
+      signInWithPopup,
+      signOut,
+      onAuthStateChanged,
+      updateProfile
+    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyAxT1oGX80K5dbWuoYKAqp_fxHas29LqwE",
+      authDomain: "alonso-bix-store.firebaseapp.com",
+      projectId: "alonso-bix-store",
+      storageBucket: "alonso-bix-store.firebasestorage.app",
+      messagingSenderId: "224238635153",
+      appId: "1:224238635153:web:d36b3123a1c0cc61c4d730",
+      measurementId: "G-FQLGN8MNWH"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const provider = new GoogleAuthProvider();
+    provider.setCustomParameters({ prompt: 'select_account' });
+
     const filters = document.querySelectorAll('.filter[data-filter]');
     const authModal = document.getElementById('authModal');
     const authBackdrop = document.getElementById('authBackdrop');
@@ -1058,6 +1088,10 @@
     const authModalStatus = document.getElementById('authModalStatus');
     const registerModalBtn = document.getElementById('registerModalBtn');
     const loginModalBtn = document.getElementById('loginModalBtn');
+    const googleRegisterBtn = document.getElementById('googleRegisterBtn');
+    const googleLoginModalBtn = document.getElementById('googleLoginModalBtn');
+    const googleLoginBtn = document.getElementById('googleLoginBtn');
+    const openRegisterFromPanel = document.getElementById('openRegisterFromPanel');
     const products = document.querySelectorAll('.product');
     const searchInput = document.getElementById('searchInput');
     const addToCartButtons = document.querySelectorAll('.add-to-cart');
@@ -1174,53 +1208,87 @@
         : 'Ingreso limpio y rápido, sin mezclarlo con el catálogo.';
     }
 
+    async function googleSignIn() {
+      try {
+        await signInWithPopup(auth, provider);
+        closeModal();
+      } catch (error) {
+        alert(error.message);
+      }
+    }
+
     openRegisterModal.addEventListener('click', () => openModal('register'));
     closeAuthModal.addEventListener('click', closeModal);
     authBackdrop.addEventListener('click', closeModal);
     tabRegister.addEventListener('click', () => switchMode('register'));
     tabLogin.addEventListener('click', () => switchMode('login'));
+    googleRegisterBtn.addEventListener('click', googleSignIn);
+    googleLoginModalBtn.addEventListener('click', googleSignIn);
+    googleLoginBtn.addEventListener('click', googleSignIn);
+    openRegisterFromPanel.addEventListener('click', () => openModal('register'));
 
     document.querySelector('a[href="#panelCuenta"]').addEventListener('click', (e) => {
       e.preventDefault();
       openModal('login');
     });
 
-    registerModalBtn.addEventListener('click', () => {
+    registerModalBtn.addEventListener('click', async () => {
       const email = document.getElementById('registerEmail').value.trim();
       const pass = document.getElementById('registerPassword').value.trim();
       const name = document.getElementById('registerName').value.trim();
       if (!name || !email || !pass) return alert('Completa nombre, correo y contraseña.');
-      setStatus(`Cuenta creada para: ${name} (${email})`);
-      closeModal();
-      alert('Demo visual: conecta tu Firebase si quieres registro real.');
+
+      try {
+        const userCredential = await createUserWithEmailAndPassword(auth, email, pass);
+        if (name) {
+          await updateProfile(userCredential.user, { displayName: name });
+        }
+        closeModal();
+      } catch (error) {
+        alert(error.message);
+      }
     });
 
-    loginModalBtn.addEventListener('click', () => {
+    loginModalBtn.addEventListener('click', async () => {
       const email = document.getElementById('loginEmailModal').value.trim();
       const pass = document.getElementById('loginPasswordModal').value.trim();
       if (!email || !pass) return alert('Completa correo y contraseña.');
-      setStatus(`Sesión iniciada como: ${email}`);
-      closeModal();
+
+      try {
+        await signInWithEmailAndPassword(auth, email, pass);
+        closeModal();
+      } catch (error) {
+        alert(error.message);
+      }
     });
 
-    window.register = () => {
+    window.login = async () => {
       const email = document.getElementById('email').value.trim();
       const pass = document.getElementById('password').value.trim();
       if (!email || !pass) return alert('Completa correo y contraseña.');
-      setStatus(`Cuenta creada localmente para: ${email}`);
-      alert('Demo visual: conecta tu Firebase si quieres autenticación real.');
+      try {
+        await signInWithEmailAndPassword(auth, email, pass);
+      } catch (error) {
+        alert(error.message);
+      }
     };
 
-    window.login = () => {
-      const email = document.getElementById('email').value.trim();
-      const pass = document.getElementById('password').value.trim();
-      if (!email || !pass) return alert('Completa correo y contraseña.');
-      setStatus(`Sesión iniciada como: ${email}`);
+    window.logout = async () => {
+      try {
+        await signOut(auth);
+      } catch (error) {
+        alert(error.message);
+      }
     };
 
-    window.logout = () => {
-      setStatus('No has iniciado sesión.');
-    };
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        const label = user.displayName ? `${user.displayName} (${user.email})` : user.email;
+        setStatus(`Sesión iniciada como: ${label}`);
+      } else {
+        setStatus('No has iniciado sesión.');
+      }
+    });
   </script>
 </body>
 </html>
