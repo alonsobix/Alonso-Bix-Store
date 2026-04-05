@@ -78,6 +78,10 @@
       background: linear-gradient(135deg, #22c55e, var(--success));
     }
 
+    .btn-danger {
+      background: linear-gradient(135deg, #f87171, var(--danger));
+    }
+
     .pill {
       display: inline-flex;
       align-items: center;
@@ -159,6 +163,10 @@
       background: rgba(255,255,255,.04);
       color: #fff;
       font-size: .92rem;
+    }
+
+    #cartToggle {
+      cursor: pointer;
     }
 
     .page {
@@ -542,7 +550,7 @@
       </nav>
 
       <div class="stack">
-        <div class="user-chip" id="cartCount">🛒 0</div>
+        <button class="user-chip" id="cartToggle" type="button">🛒 0</button>
         <button class="btn btn-secondary" id="accountShortcut">Acceder</button>
       </div>
     </div>
@@ -785,10 +793,10 @@
               </article>
             </div>
 
-            <aside class="panel card">
+            <aside class="panel card hidden" id="cartPanel">
               <div class="pill">Carrito</div>
               <h3 style="margin:14px 0 8px;">Resumen del pedido</h3>
-              <p class="muted" style="margin:0;">El carrito acompaña la compra sin mezclar la cuenta en la home.</p>
+              <p class="muted" style="margin:0;">Haz click en el carrito superior para abrir o cerrar esta lista.</p>
 
               <div class="cart-items" id="cartItems">
                 <div class="cart-item">
@@ -949,7 +957,8 @@
     const shippingEl = document.getElementById('shipping');
     const totalEl = document.getElementById('total');
     const checkoutBtn = document.getElementById('checkoutBtn');
-    const cartCount = document.getElementById('cartCount');
+    const cartToggle = document.getElementById('cartToggle');
+    const cartPanel = document.getElementById('cartPanel');
 
     const loginBtn = document.getElementById('loginBtn');
     const registerBtn = document.getElementById('registerBtn');
@@ -1017,8 +1026,15 @@
       });
     });
 
+    function removeFromCart(index) {
+      cart.splice(index, 1);
+      renderCart();
+    }
+
+    window.removeFromCart = removeFromCart;
+
     function renderCart() {
-      cartCount.textContent = `🛒 ${cart.length}`;
+      cartToggle.textContent = `🛒 ${cart.length}`;
 
       if (!cart.length) {
         cartItems.innerHTML = `
@@ -1038,6 +1054,13 @@
             <div>
               <h4 style="margin:0 0 4px;">${item.name}</h4>
               <p class="muted" style="margin:0;font-size:.88rem;">Producto agregado #${index + 1}</p>
+              <button
+                class="btn btn-danger"
+                style="margin-top:8px;padding:8px 12px;font-size:.82rem;"
+                onclick="removeFromCart(${index})"
+              >
+                Eliminar
+              </button>
             </div>
             <strong>S/ ${item.price.toFixed(2)}</strong>
           </div>
@@ -1088,9 +1111,14 @@
         };
         cart.push(item);
         orders.push(item);
+        cartPanel.classList.remove('hidden');
         renderCart();
         renderOrders();
       });
+    });
+
+    cartToggle.addEventListener('click', () => {
+      cartPanel.classList.toggle('hidden');
     });
 
     checkoutBtn.addEventListener('click', () => {
