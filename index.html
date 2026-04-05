@@ -973,9 +973,25 @@
                 <div class="cart-thumb">📭</div>
                 <div>
                   <h4 style="margin:0 0 4px;">Todavía no tienes pedidos</h4>
-                  <p class="muted" style="margin:0;font-size:.88rem;">Cuando agregues productos o conectes checkout real, aparecerán aquí.</p>
+                  <p class="muted" style="margin:0;font-size:.88rem;">Cuando agregues productos y envíes el pedido, aparecerán aquí.</p>
                 </div>
                 <strong>S/ 0.00</strong>
+              </div>
+            </div>
+
+            <div id="adminPanel" class="hidden" style="margin-top:24px;">
+              <div class="pill">Admin</div>
+              <h3 style="font-size:1.35rem; margin:14px 0 10px;">Pedidos recibidos</h3>
+              <p class="muted" style="margin:0 0 14px;">Aquí se registran todos los pedidos enviados por los usuarios.</p>
+              <div class="cart-items" id="adminOrdersList">
+                <div class="cart-item">
+                  <div class="cart-thumb">🗂️</div>
+                  <div>
+                    <h4 style="margin:0 0 4px;">No hay pedidos registrados</h4>
+                    <p class="muted" style="margin:0;font-size:.88rem;">Cuando alguien compre, aparecerá aquí.</p>
+                  </div>
+                  <strong>S/ 0.00</strong>
+                </div>
               </div>
             </div>
           </article>
@@ -1003,6 +1019,16 @@
       signOut,
       updateProfile
     } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js";
+    import {
+      getFirestore,
+      collection,
+      addDoc,
+      query,
+      where,
+      orderBy,
+      onSnapshot,
+      serverTimestamp
+    } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyAxT1oGX80K5dbWuoYKAqp_fxHas29LqwE",
@@ -1016,7 +1042,9 @@
 
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
+    const db = getFirestore(app);
     const provider = new GoogleAuthProvider();
+    const ADMIN_EMAIL = 'xamaxito1001@gmail.com';
 
     const routes = {
       '/': document.getElementById('route-home'),
@@ -1050,9 +1078,12 @@
     const accountName = document.getElementById('accountName');
     const accountEmail = document.getElementById('accountEmail');
     const ordersList = document.getElementById('ordersList');
+    const adminPanel = document.getElementById('adminPanel');
+    const adminOrdersList = document.getElementById('adminOrdersList');
 
     const cart = [];
-    const orders = [];
+    let userOrders = [];
+    let adminOrders = [];
     let currentFilter = 'all';
     let currentUser = null;
 
@@ -1150,19 +1181,107 @@
     }
 
     function renderOrders() {
-      if (!orders.length) {
+      if (!userOrders.length) {
         ordersList.innerHTML = `
           <div class="cart-item">
             <div class="cart-thumb">📭</div>
             <div>
               <h4 style="margin:0 0 4px;">Todavía no tienes pedidos</h4>
-              <p class="muted" style="margin:0;font-size:.88rem;">Cuando agregues productos o conectes checkout real, aparecerán aquí.</p>
+              <p class="muted" style="margin:0;font-size:.88rem;">Cuando agregues productos y envíes el pedido, aparecerán aquí.</p>
             </div>
             <strong>S/ 0.00</strong>
           </div>
         `;
         return;
       }
+
+      ordersList.innerHTML = userOrders.map((order, index) => `
+        <div class="cart-item">
+          <div class="cart-thumb">✅</div>
+          <div>
+            <h4 style="margin:0 0 4px;">Pedido #${index + 1}</h4>
+            <p class="muted" style="margin:0;font-size:.88rem;">${order.items.map(item => item.name).join(', ')}</p>
+          </div>
+          <strong>S/ ${Number(order.total || 0).toFixed(2)}</strong>
+        </div>
+      `).join('');
+    }
+
+    function renderAdminOrders() {
+      if (!adminOrders.length) {
+        adminOrdersList.innerHTML = `
+          <div class="cart-item">
+            <div class="cart-thumb">🗂️</div>
+            <div>
+              <h4 style="margin:0 0 4px;">No hay pedidos registrados</h4>
+              <p class="muted" style="margin:0;font-size:.88rem;">Cuando alguien compre, aparecerá aquí.</p>
+            </div>
+            <strong>S/ 0.00</strong>
+          </div>
+        `;
+        return;
+      }
+
+      adminOrdersList.innerHTML = adminOrders.map((order, index) => `
+        <div class="cart-item">
+          <div class="cart-thumb">📦</div>
+          <div>
+            <h4 style="margin:0 0 4px;">Pedido global #${index + 1}</h4>
+            <p class="muted" style="margin:0;font-size:.88rem;">${order.userName || 'Usuario'} • ${order.userEmail || 'Sin correo'}</p>
+            <p class="muted" style="margin:4px 0 0;font-size:.82rem;">${order.items.map(item => item.name).join(', ')}</p>
+          </div>
+          <strong>S/ ${Number(order.total || 0).toFixed(2)}</strong>
+        </div>
+      `).join('');
+    }
+
+    let unsubscribeUserOrders = null;
+    let unsubscribeAdminOrders = null;
+
+    function listenUserOrders(user) {
+      if (unsubscribeUserOrders) unsubscribeUserOrders();
+      if (!user?.email) {
+        userOrders = [];
+        renderOrders();
+        return;
+      }
+
+      const userOrdersQuery = query(
+        collection(db, 'orders'),
+        where('userEmail', '==', user.email),
+        orderBy('createdAt', 'desc')
+      );
+
+      unsubscribeUserOrders = onSnapshot(userOrdersQuery, (snapshot) => {
+        userOrders = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        renderOrders();
+      }, () => {
+        userOrders = [];
+        renderOrders();
+      });
+    }
+
+    function listenAdminOrders(user) {
+      if (unsubscribeAdminOrders) unsubscribeAdminOrders();
+
+      if (user?.email !== ADMIN_EMAIL) {
+        adminOrders = [];
+        adminPanel.classList.add('hidden');
+        renderAdminOrders();
+        return;
+      }
+
+      adminPanel.classList.remove('hidden');
+      const allOrdersQuery = query(collection(db, 'orders'), orderBy('createdAt', 'desc'));
+
+      unsubscribeAdminOrders = onSnapshot(allOrdersQuery, (snapshot) => {
+        adminOrders = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        renderAdminOrders();
+      }, () => {
+        adminOrders = [];
+        renderAdminOrders();
+      });
+    }
 
       ordersList.innerHTML = orders.map((item, index) => `
         <div class="cart-item">
@@ -1183,27 +1302,47 @@
           price: parseFloat(button.dataset.price)
         };
         cart.push(item);
-        orders.push(item);
         cartPanel.classList.remove('hidden');
         renderCart();
-        renderOrders();
       });
+    });
     });
 
     cartToggle.addEventListener('click', () => {
       cartPanel.classList.toggle('hidden');
     });
 
-    checkoutBtn.addEventListener('click', () => {
+    checkoutBtn.addEventListener('click', async () => {
       if (!cart.length) {
         alert('Tu carrito está vacío.');
         return;
       }
-      const phone = '51999999999';
-      const lines = cart.map((item, i) => `${i + 1}. ${item.name} - S/ ${item.price.toFixed(2)}`).join('%0A');
-      const total = cart.reduce((sum, item) => sum + item.price, 0);
-      const url = `https://wa.me/${phone}?text=Hola,%20quiero%20pedir:%0A${lines}%0A%0ATotal:%20S/%20${total.toFixed(2)}`;
-      window.open(url, '_blank');
+
+      if (!currentUser) {
+        alert('Primero inicia sesión para registrar el pedido.');
+        navigate('/login');
+        return;
+      }
+
+      try {
+        const total = cart.reduce((sum, item) => sum + item.price, 0);
+
+        await addDoc(collection(db, 'orders'), {
+          userId: currentUser.uid,
+          userEmail: currentUser.email || '',
+          userName: currentUser.displayName || currentUser.email?.split('@')[0] || 'Usuario',
+          items: cart.map(item => ({ name: item.name, price: item.price })),
+          total,
+          status: 'pendiente',
+          createdAt: serverTimestamp()
+        });
+
+        cart.length = 0;
+        renderCart();
+        alert('Pedido registrado correctamente.');
+      } catch (error) {
+        alert('No se pudo registrar el pedido: ' + error.message);
+      }
     });
 
     function setUser(user) {
@@ -1216,6 +1355,17 @@
         registerMessage.textContent = `Cuenta activa: ${displayName}`;
         accountShortcut.textContent = displayName.length > 14 ? displayName.slice(0, 14) + '…' : displayName;
       } else {
+        accountName.textContent = 'Invitado';
+        accountEmail.textContent = 'No has iniciado sesión';
+        loginMessage.textContent = 'Todavía no has iniciado sesión.';
+        registerMessage.textContent = 'Completa tus datos para crear una cuenta real.';
+        accountShortcut.textContent = 'Acceder';
+        adminPanel.classList.add('hidden');
+      }
+
+      listenUserOrders(user);
+      listenAdminOrders(user);
+    } else {
         accountName.textContent = 'Invitado';
         accountEmail.textContent = 'No has iniciado sesión';
         loginMessage.textContent = 'Todavía no has iniciado sesión.';
@@ -1276,6 +1426,8 @@
     logoutBtn.addEventListener('click', async () => {
       try {
         await signOut(auth);
+        if (unsubscribeUserOrders) unsubscribeUserOrders();
+        if (unsubscribeAdminOrders) unsubscribeAdminOrders();
         navigate('/');
       } catch (error) {
         alert('No se pudo cerrar sesión: ' + error.message);
