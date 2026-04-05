@@ -700,7 +700,7 @@
               <article class="product card" data-category="cuentas">
                 <div class="product-media">
                   <span class="badge">Top</span>
-                  👑
+                  <img src="cuenta.png" alt="Cuenta 2005" style="width:100%;height:100%;object-fit:cover;border-radius:16px;" />
                 </div>
                 <div class="product-body">
                   <h3 style="margin:0;">Cuenta del 2005 con crías veneno</h3>
@@ -1105,7 +1105,7 @@
       }
 
       const subtotal = cart.reduce((sum, item) => sum + item.price, 0);
-      const shipping = cart.length ? 15 : 0;
+      const shipping = 0;
       const total = subtotal + shipping;
 
       subtotalEl.textContent = `S/ ${subtotal.toFixed(2)}`;
