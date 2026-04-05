@@ -560,29 +560,6 @@
         width: calc(100vw - 24px);
       }
     }
-
-      .nav {
-        width: 100%;
-      }
-
-      .hero-grid,
-      .products,
-      .categories,
-      .benefits,
-      .stats {
-        grid-template-columns: 1fr;
-      }
-
-      .hero-main {
-        padding: 24px;
-      }
-
-      .product-bottom,
-      .cart-item {
-        grid-template-columns: 1fr;
-        align-items: start;
-      }
-    }
   </style>
 </head>
 <body>
@@ -1101,8 +1078,8 @@
 
     const cart = [];
     let currentUser = null;
-    let currentUserOrders = [];
-    let currentAdminOrders = [];
+    let userOrdersCache = [];
+    let adminOrdersCache = [];
     let selectedOrderId = null;
     let userOrdersUnsubscribe = null;
     let adminOrdersUnsubscribe = null;
@@ -1123,7 +1100,7 @@
       });
     }
 
-    routeButtons.forEach(button => {
+    routeButtons.forEach((button) => {
       button.addEventListener('click', (e) => {
         e.preventDefault();
         navigate(button.dataset.route);
@@ -1138,12 +1115,12 @@
       navigate(currentUser ? '/account' : '/login');
     });
 
-    filterButtons.forEach(btn => {
+    filterButtons.forEach((btn) => {
       btn.addEventListener('click', () => {
-        filterButtons.forEach(b => b.classList.remove('active'));
+        filterButtons.forEach((b) => b.classList.remove('active'));
         btn.classList.add('active');
         const currentFilter = btn.dataset.filter;
-        productCards.forEach(card => {
+        productCards.forEach((card) => {
           const show = currentFilter === 'all' || card.dataset.category === currentFilter;
           card.style.display = show ? 'flex' : 'none';
         });
@@ -1158,6 +1135,7 @@
 
     function renderCart() {
       cartToggle.textContent = `🛒 ${cart.length}`;
+
       if (!cart.length) {
         cartItems.innerHTML = `
           <div class="cart-item">
@@ -1182,12 +1160,14 @@
           </div>
         `).join('');
       }
+
       const total = cart.reduce((sum, item) => sum + item.price, 0);
       totalEl.textContent = `S/ ${total.toFixed(2)}`;
     }
 
     function renderUserOrders(orders) {
-      currentUserOrders = orders;
+      userOrdersCache = orders;
+
       if (!orders.length) {
         ordersList.innerHTML = `
           <div class="cart-item">
@@ -1207,11 +1187,11 @@
           <div class="cart-thumb">✅</div>
           <div>
             <h4 style="margin:0 0 4px;">Pedido #${index + 1}</h4>
-            <p class="muted" style="margin:0;font-size:.88rem;">${(order.items || []).map(item => item.name).join(', ')}</p>
+            <p class="muted" style="margin:0;font-size:.88rem;">${(order.items || []).map((item) => item.name).join(', ')}</p>
             <p class="muted" style="margin:4px 0 0;font-size:.82rem;">Estado: ${order.status || 'pendiente'}</p>
             <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;">
               <button class="btn btn-secondary" style="padding:8px 12px;font-size:.82rem;" onclick="openChat('${order.id}', false)">Abrir chat</button>
-              ${order.status !== 'cancelado' && order.status !== 'realizado' ? `<button class="btn btn-danger" style="padding:8px 12px;font-size:.82rem;" onclick="markOrderCanceled('${order.id}')">Cancelar pedido</button>` : ''}
+              ${(order.status !== 'cancelado' && order.status !== 'realizado') ? `<button class="btn btn-danger" style="padding:8px 12px;font-size:.82rem;" onclick="markOrderCanceled('${order.id}')">Cancelar pedido</button>` : ''}
             </div>
           </div>
           <strong>S/ ${Number(order.total || 0).toFixed(2)}</strong>
@@ -1220,7 +1200,8 @@
     }
 
     function renderAdminOrders(orders) {
-      currentAdminOrders = orders;
+      adminOrdersCache = orders;
+
       if (!orders.length) {
         adminOrdersList.innerHTML = `
           <div class="cart-item">
@@ -1241,11 +1222,11 @@
           <div>
             <h4 style="margin:0 0 4px;">Pedido global #${index + 1}</h4>
             <p class="muted" style="margin:0;font-size:.88rem;">${order.userName || 'Usuario'} • ${order.userEmail || 'Sin correo'}</p>
-            <p class="muted" style="margin:4px 0 0;font-size:.82rem;">${(order.items || []).map(item => item.name).join(', ')}</p>
+            <p class="muted" style="margin:4px 0 0;font-size:.82rem;">${(order.items || []).map((item) => item.name).join(', ')}</p>
             <p class="muted" style="margin:4px 0 0;font-size:.82rem;">Estado: ${order.status || 'pendiente'}</p>
             <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;">
-              ${order.status !== 'realizado' && order.status !== 'cancelado' ? `<button class="btn btn-success" style="padding:8px 12px;font-size:.82rem;" onclick="markOrderCompleted('${order.id}')">Pedido realizado</button>` : ''}
-              ${order.status !== 'cancelado' && order.status !== 'realizado' ? `<button class="btn btn-danger" style="padding:8px 12px;font-size:.82rem;" onclick="markOrderCanceled('${order.id}')">Pedido cancelado</button>` : ''}
+              ${(order.status !== 'realizado' && order.status !== 'cancelado') ? `<button class="btn btn-success" style="padding:8px 12px;font-size:.82rem;" onclick="markOrderCompleted('${order.id}')">Pedido realizado</button>` : ''}
+              ${(order.status !== 'cancelado' && order.status !== 'realizado') ? `<button class="btn btn-danger" style="padding:8px 12px;font-size:.82rem;" onclick="markOrderCanceled('${order.id}')">Pedido cancelado</button>` : ''}
               <button class="btn btn-secondary" style="padding:8px 12px;font-size:.82rem;" onclick="openChat('${order.id}', true)">Abrir chat</button>
             </div>
           </div>
@@ -1289,20 +1270,18 @@
         return;
       }
 
-      chatMessages.innerHTML = messages.map(message => {
+      chatMessages.innerHTML = messages.map((message) => {
         const isMine = currentUser && message.senderEmail === currentUser.email;
         const roleLabel = message.senderRole === 'admin' ? 'Admin' : 'Cliente';
         const bubbleStyle = isMine
           ? 'margin-left:auto;background:linear-gradient(135deg, rgba(124,58,237,.35), rgba(91,33,182,.35));border:1px solid rgba(124,58,237,.5);'
           : 'margin-right:auto;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);';
-        const imageHtml = '';
 
         return `
           <div style="display:flex;${isMine ? 'justify-content:flex-end;' : 'justify-content:flex-start;'}">
             <div style="max-width:78%;padding:12px 14px;border-radius:18px;${bubbleStyle}">
               <div style="font-size:.78rem;font-weight:800;margin-bottom:4px;opacity:.9;">${message.senderName || roleLabel} · ${roleLabel}</div>
-              ${message.text ? `<div style="line-height:1.5;word-break:break-word;">${message.text}</div>` : ''}
-              ${imageHtml}
+              <div style="line-height:1.5;word-break:break-word;">${message.text || ''}</div>
             </div>
           </div>
         `;
@@ -1315,8 +1294,8 @@
       selectedOrderId = orderId;
       orderChatPanel.classList.remove('hidden');
 
-      const source = isAdminView ? currentAdminOrders : currentUserOrders;
-      const order = source.find(item => item.id === orderId);
+      const source = isAdminView ? adminOrdersCache : userOrdersCache;
+      const order = source.find((item) => item.id === orderId);
       chatOrderLabel.textContent = order
         ? `Conversación del pedido de ${order.userName || 'usuario'}${order.userEmail ? ' • ' + order.userEmail : ''}`
         : 'Conversación del pedido';
@@ -1327,7 +1306,7 @@
 
       const chatQuery = query(collection(db, 'orders', orderId, 'messages'), orderBy('createdAt', 'asc'));
       chatUnsubscribe = onSnapshot(chatQuery, (snapshot) => {
-        const messages = snapshot.docs.map(docItem => ({ id: docItem.id, ...docItem.data() }));
+        const messages = snapshot.docs.map((docItem) => ({ id: docItem.id, ...docItem.data() }));
         renderChatMessages(messages);
       }, (error) => {
         console.error(error);
@@ -1338,6 +1317,7 @@
 
     async function sendChatMessage() {
       const text = chatInput.value.trim();
+
       if (!selectedOrderId) {
         alert('Primero abre un pedido para chatear.');
         return;
@@ -1349,6 +1329,7 @@
         alert('Debes iniciar sesión.');
         return;
       }
+
       try {
         await addDoc(collection(db, 'orders', selectedOrderId, 'messages'), {
           text,
@@ -1360,45 +1341,6 @@
         chatInput.value = '';
         chatInput.focus();
       } catch (error) {
-        console.error(error);
-        alert('No se pudo enviar el mensaje: ' + error.message);
-      }
-    }
-      if (!text && !imageFile) {
-        return;
-      }
-      if (!currentUser) {
-        alert('Debes iniciar sesión.');
-        return;
-      }
-
-      try {
-        let imageUrl = '';
-
-        if (imageFile) {
-          const safeName = `${Date.now()}-${imageFile.name.replace(/[^a-zA-Z0-9.\-_]/g, '_')}`;
-          const storageRef = ref(storage, `chat-images/${selectedOrderId}/${safeName}`);
-          await uploadBytes(storageRef, imageFile);
-          imageUrl = await getDownloadURL(storageRef);
-        }
-
-        await addDoc(collection(db, 'orders', selectedOrderId, 'messages'), {
-          text,
-          imageUrl,
-          senderName: currentUser.displayName || currentUser.email || 'Usuario',
-          senderEmail: currentUser.email || '',
-          senderRole: currentUser.email === ADMIN_EMAIL ? 'admin' : 'user',
-          createdAt: serverTimestamp()
-        });
-
-        chatInput.value = '';
-        chatImageInput.value = '';
-        chatInput.focus();
-      } catch (error) {
-        console.error(error);
-        alert('No se pudo enviar el mensaje o la foto: ' + error.message);
-      }
-    } catch (error) {
         console.error(error);
         alert('No se pudo enviar el mensaje: ' + error.message);
       }
@@ -1441,7 +1383,7 @@
 
       const userOrdersQuery = query(collection(db, 'orders'), where('userEmail', '==', user.email));
       userOrdersUnsubscribe = onSnapshot(userOrdersQuery, (snapshot) => {
-        const orders = snapshot.docs.map(docItem => ({ id: docItem.id, ...docItem.data() }));
+        const orders = snapshot.docs.map((docItem) => ({ id: docItem.id, ...docItem.data() }));
         renderUserOrders(orders.reverse());
       }, (error) => {
         console.error(error);
@@ -1452,7 +1394,7 @@
         adminPanel.classList.remove('hidden');
         const adminQuery = query(collection(db, 'orders'));
         adminOrdersUnsubscribe = onSnapshot(adminQuery, (snapshot) => {
-          const orders = snapshot.docs.map(docItem => ({ id: docItem.id, ...docItem.data() }));
+          const orders = snapshot.docs.map((docItem) => ({ id: docItem.id, ...docItem.data() }));
           renderAdminOrders(orders.reverse());
         }, (error) => {
           console.error(error);
@@ -1464,7 +1406,7 @@
       }
     }
 
-    addToCartButtons.forEach(button => {
+    addToCartButtons.forEach((button) => {
       button.addEventListener('click', () => {
         const item = {
           name: button.dataset.name,
@@ -1497,7 +1439,7 @@
           userId: currentUser.uid,
           userEmail: currentUser.email || '',
           userName: currentUser.displayName || currentUser.email?.split('@')[0] || 'Usuario',
-          items: cart.map(item => ({ name: item.name, price: item.price })),
+          items: cart.map((item) => ({ name: item.name, price: item.price })),
           total,
           status: 'pendiente',
           createdAt: serverTimestamp()
@@ -1513,6 +1455,7 @@
 
     function setUser(user) {
       currentUser = user;
+
       if (user) {
         const displayName = user.displayName || user.email?.split('@')[0] || 'Usuario';
         accountName.textContent = displayName;
@@ -1527,16 +1470,19 @@
         registerMessage.textContent = 'Completa tus datos para crear una cuenta real.';
         accountShortcut.textContent = 'Acceder';
       }
+
       startOrderListeners(user);
     }
 
     loginBtn.addEventListener('click', async () => {
       const email = document.getElementById('loginEmail').value.trim();
       const password = document.getElementById('loginPassword').value.trim();
+
       if (!email || !password) {
         alert('Completa correo y contraseña.');
         return;
       }
+
       try {
         await signInWithEmailAndPassword(auth, email, password);
         navigate('/account');
@@ -1550,10 +1496,12 @@
       const name = document.getElementById('registerName').value.trim();
       const email = document.getElementById('registerEmail').value.trim();
       const password = document.getElementById('registerPassword').value.trim();
+
       if (!name || !email || !password) {
         alert('Completa nombre, correo y contraseña.');
         return;
       }
+
       try {
         const cred = await createUserWithEmailAndPassword(auth, email, password);
         await updateProfile(cred.user, { displayName: name });
@@ -1598,7 +1546,6 @@
 
       const currentName = currentUser.displayName || currentUser.email?.split('@')[0] || '';
       const newName = prompt('Escribe tu nuevo nombre de perfil:', currentName);
-
       if (newName === null) {
         return;
       }
@@ -1610,10 +1557,7 @@
       }
 
       try {
-        await updateProfile(auth.currentUser, {
-          displayName: cleanName
-        });
-
+        await updateProfile(auth.currentUser, { displayName: cleanName });
         setUser(auth.currentUser);
         alert('Perfil actualizado correctamente.');
       } catch (error) {
