@@ -864,7 +864,7 @@
               </div>
 
               <div class="summary">
-                <div class="summary-row"><span class="muted">Subtotal</span><strong id="subtotal">S/ 0.00</strong></div>
+                
                 
                 <div class="summary-row summary-total"><span>Total</span><strong id="total">S/ 0.00</strong></div>
               </div>
@@ -1121,12 +1121,8 @@
         `).join('');
       }
 
-      const subtotal = cart.reduce((sum, item) => sum + item.price, 0);
-      const shipping = 0;
-      const total = subtotal + shipping;
+      const total = cart.reduce((sum, item) => sum + item.price, 0);
 
-      subtotalEl.textContent = `S/ ${subtotal.toFixed(2)}`;
-      shippingEl.textContent = `S/ ${shipping.toFixed(2)}`;
       totalEl.textContent = `S/ ${total.toFixed(2)}`;
     }
 
