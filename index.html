@@ -169,6 +169,14 @@
       cursor: pointer;
     }
 
+    .cart-floating {
+      position: fixed;
+      top: 78px;
+      right: 16px;
+      width: min(340px, calc(100vw - 32px));
+      z-index: 80;
+    }
+
     .page {
       padding: 28px 0 48px;
     }
@@ -303,7 +311,7 @@
 
     .layout {
       display: grid;
-      grid-template-columns: 1fr 330px;
+      grid-template-columns: 1fr;
       gap: 18px;
       align-items: start;
     }
@@ -506,6 +514,35 @@
       .topbar {
         flex-wrap: wrap;
       }
+
+      .nav {
+        width: 100%;
+      }
+
+      .hero-grid,
+      .products,
+      .categories,
+      .benefits,
+      .stats {
+        grid-template-columns: 1fr;
+      }
+
+      .hero-main {
+        padding: 24px;
+      }
+
+      .product-bottom,
+      .cart-item {
+        grid-template-columns: 1fr;
+        align-items: start;
+      }
+
+      .cart-floating {
+        top: 88px;
+        right: 12px;
+        width: calc(100vw - 24px);
+      }
+    }
 
       .nav {
         width: 100%;
@@ -793,10 +830,10 @@
               </article>
             </div>
 
-            <aside class="panel card hidden" id="cartPanel">
+            <aside class="panel card hidden cart-floating" id="cartPanel">
               <div class="pill">Carrito</div>
               <h3 style="margin:14px 0 8px;">Resumen del pedido</h3>
-              <p class="muted" style="margin:0;">Haz click en el carrito superior para abrir o cerrar esta lista.</p>
+              <p class="muted" style="margin:0;">Haz click en el carrito superior para abrir o cerrar esta nube flotante.</p>
 
               <div class="cart-items" id="cartItems">
                 <div class="cart-item">
