@@ -986,6 +986,7 @@
               <div id="chatMessages" class="cart-items"></div>
               <div class="form-grid" style="margin-top:14px;">
                 <input class="input" id="chatInput" type="text" placeholder="Escribe tu mensaje..." />
+                <input class="input" id="chatImageInput" type="file" accept="image/*" />
                 <button class="btn btn-primary" id="sendChatBtn">Enviar mensaje</button>
               </div>
             </div>
@@ -1042,6 +1043,12 @@
       updateDoc,
       orderBy
     } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
+    import {
+      getStorage,
+      ref,
+      uploadBytes,
+      getDownloadURL
+    } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-storage.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyAxT1oGX80K5dbWuoYKAqp_fxHas29LqwE",
@@ -1056,6 +1063,7 @@
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getFirestore(app);
+    const storage = getStorage(app);
     const provider = new GoogleAuthProvider();
     const ADMIN_EMAIL = 'xamaxito1001@gmail.com';
 
@@ -1098,6 +1106,7 @@
     const chatMessages = document.getElementById('chatMessages');
     const chatInput = document.getElementById('chatInput');
     const sendChatBtn = document.getElementById('sendChatBtn');
+    const chatImageInput = document.getElementById('chatImageInput');
 
     const cart = [];
     let currentUser = null;
@@ -1295,12 +1304,16 @@
         const bubbleStyle = isMine
           ? 'margin-left:auto;background:linear-gradient(135deg, rgba(124,58,237,.35), rgba(91,33,182,.35));border:1px solid rgba(124,58,237,.5);'
           : 'margin-right:auto;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);';
+        const imageHtml = message.imageUrl
+          ? `<div style="margin-top:${message.text ? '10px' : '0'};"><img src="${message.imageUrl}" alt="Imagen del chat" style="max-width:220px;width:100%;border-radius:14px;border:1px solid rgba(255,255,255,.12);display:block;" /></div>`
+          : '';
 
         return `
           <div style="display:flex;${isMine ? 'justify-content:flex-end;' : 'justify-content:flex-start;'}">
             <div style="max-width:78%;padding:12px 14px;border-radius:18px;${bubbleStyle}">
               <div style="font-size:.78rem;font-weight:800;margin-bottom:4px;opacity:.9;">${message.senderName || roleLabel} · ${roleLabel}</div>
-              <div style="line-height:1.5;word-break:break-word;">${message.text || ''}</div>
+              ${message.text ? `<div style="line-height:1.5;word-break:break-word;">${message.text}</div>` : ''}
+              ${imageHtml}
             </div>
           </div>
         `;
@@ -1336,28 +1349,47 @@
 
     async function sendChatMessage() {
       const text = chatInput.value.trim();
+      const imageFile = chatImageInput.files && chatImageInput.files[0] ? chatImageInput.files[0] : null;
+
       if (!selectedOrderId) {
         alert('Primero abre un pedido para chatear.');
         return;
       }
-      if (!text) {
+      if (!text && !imageFile) {
         return;
       }
       if (!currentUser) {
         alert('Debes iniciar sesión.');
         return;
       }
+
       try {
+        let imageUrl = '';
+
+        if (imageFile) {
+          const safeName = `${Date.now()}-${imageFile.name.replace(/[^a-zA-Z0-9.\-_]/g, '_')}`;
+          const storageRef = ref(storage, `chat-images/${selectedOrderId}/${safeName}`);
+          await uploadBytes(storageRef, imageFile);
+          imageUrl = await getDownloadURL(storageRef);
+        }
+
         await addDoc(collection(db, 'orders', selectedOrderId, 'messages'), {
           text,
+          imageUrl,
           senderName: currentUser.displayName || currentUser.email || 'Usuario',
           senderEmail: currentUser.email || '',
           senderRole: currentUser.email === ADMIN_EMAIL ? 'admin' : 'user',
           createdAt: serverTimestamp()
         });
+
         chatInput.value = '';
+        chatImageInput.value = '';
         chatInput.focus();
       } catch (error) {
+        console.error(error);
+        alert('No se pudo enviar el mensaje o la foto: ' + error.message);
+      }
+    } catch (error) {
         console.error(error);
         alert('No se pudo enviar el mensaje: ' + error.message);
       }
