@@ -1025,7 +1025,6 @@
       addDoc,
       query,
       where,
-      orderBy,
       onSnapshot,
       serverTimestamp
     } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
@@ -1082,10 +1081,9 @@
     const adminOrdersList = document.getElementById('adminOrdersList');
 
     const cart = [];
-    let userOrders = [];
-    let adminOrders = [];
-    let currentFilter = 'all';
     let currentUser = null;
+    let userOrdersUnsubscribe = null;
+    let adminOrdersUnsubscribe = null;
 
     function navigate(path) {
       const valid = routes[path] ? path : '/';
@@ -1101,11 +1099,6 @@
       navLinks.forEach(link => {
         link.classList.toggle('active', link.dataset.route === path);
       });
-
-      if (path === '/account' && !currentUser) {
-        accountName.textContent = 'Invitado';
-        accountEmail.textContent = 'No has iniciado sesión';
-      }
     }
 
     routeButtons.forEach(button => {
@@ -1127,7 +1120,7 @@
       btn.addEventListener('click', () => {
         filterButtons.forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
-        currentFilter = btn.dataset.filter;
+        const currentFilter = btn.dataset.filter;
         productCards.forEach(card => {
           const show = currentFilter === 'all' || card.dataset.category === currentFilter;
           card.style.display = show ? 'flex' : 'none';
@@ -1163,13 +1156,7 @@
             <div>
               <h4 style="margin:0 0 4px;">${item.name}</h4>
               <p class="muted" style="margin:0;font-size:.88rem;">Producto agregado #${index + 1}</p>
-              <button
-                class="btn btn-danger"
-                style="margin-top:8px;padding:8px 12px;font-size:.82rem;"
-                onclick="removeFromCart(${index})"
-              >
-                Eliminar
-              </button>
+              <button class="btn btn-danger" style="margin-top:8px;padding:8px 12px;font-size:.82rem;" onclick="removeFromCart(${index})">Eliminar</button>
             </div>
             <strong>S/ ${item.price.toFixed(2)}</strong>
           </div>
@@ -1180,8 +1167,8 @@
       totalEl.textContent = `S/ ${total.toFixed(2)}`;
     }
 
-    function renderOrders() {
-      if (!userOrders.length) {
+    function renderUserOrders(orders) {
+      if (!orders.length) {
         ordersList.innerHTML = `
           <div class="cart-item">
             <div class="cart-thumb">📭</div>
@@ -1195,20 +1182,20 @@
         return;
       }
 
-      ordersList.innerHTML = userOrders.map((order, index) => `
+      ordersList.innerHTML = orders.map((order, index) => `
         <div class="cart-item">
           <div class="cart-thumb">✅</div>
           <div>
             <h4 style="margin:0 0 4px;">Pedido #${index + 1}</h4>
-            <p class="muted" style="margin:0;font-size:.88rem;">${order.items.map(item => item.name).join(', ')}</p>
+            <p class="muted" style="margin:0;font-size:.88rem;">${(order.items || []).map(item => item.name).join(', ')}</p>
           </div>
           <strong>S/ ${Number(order.total || 0).toFixed(2)}</strong>
         </div>
       `).join('');
     }
 
-    function renderAdminOrders() {
-      if (!adminOrders.length) {
+    function renderAdminOrders(orders) {
+      if (!orders.length) {
         adminOrdersList.innerHTML = `
           <div class="cart-item">
             <div class="cart-thumb">🗂️</div>
@@ -1222,77 +1209,63 @@
         return;
       }
 
-      adminOrdersList.innerHTML = adminOrders.map((order, index) => `
+      adminOrdersList.innerHTML = orders.map((order, index) => `
         <div class="cart-item">
           <div class="cart-thumb">📦</div>
           <div>
             <h4 style="margin:0 0 4px;">Pedido global #${index + 1}</h4>
             <p class="muted" style="margin:0;font-size:.88rem;">${order.userName || 'Usuario'} • ${order.userEmail || 'Sin correo'}</p>
-            <p class="muted" style="margin:4px 0 0;font-size:.82rem;">${order.items.map(item => item.name).join(', ')}</p>
+            <p class="muted" style="margin:4px 0 0;font-size:.82rem;">${(order.items || []).map(item => item.name).join(', ')}</p>
           </div>
           <strong>S/ ${Number(order.total || 0).toFixed(2)}</strong>
         </div>
       `).join('');
     }
 
-    let unsubscribeUserOrders = null;
-    let unsubscribeAdminOrders = null;
+    function stopOrderListeners() {
+      if (userOrdersUnsubscribe) {
+        userOrdersUnsubscribe();
+        userOrdersUnsubscribe = null;
+      }
+      if (adminOrdersUnsubscribe) {
+        adminOrdersUnsubscribe();
+        adminOrdersUnsubscribe = null;
+      }
+    }
 
-    function listenUserOrders(user) {
-      if (unsubscribeUserOrders) unsubscribeUserOrders();
+    function startOrderListeners(user) {
+      stopOrderListeners();
+
       if (!user?.email) {
-        userOrders = [];
-        renderOrders();
-        return;
-      }
-
-      const userOrdersQuery = query(
-        collection(db, 'orders'),
-        where('userEmail', '==', user.email),
-        orderBy('createdAt', 'desc')
-      );
-
-      unsubscribeUserOrders = onSnapshot(userOrdersQuery, (snapshot) => {
-        userOrders = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        renderOrders();
-      }, () => {
-        userOrders = [];
-        renderOrders();
-      });
-    }
-
-    function listenAdminOrders(user) {
-      if (unsubscribeAdminOrders) unsubscribeAdminOrders();
-
-      if (user?.email !== ADMIN_EMAIL) {
-        adminOrders = [];
+        renderUserOrders([]);
         adminPanel.classList.add('hidden');
-        renderAdminOrders();
+        renderAdminOrders([]);
         return;
       }
 
-      adminPanel.classList.remove('hidden');
-      const allOrdersQuery = query(collection(db, 'orders'), orderBy('createdAt', 'desc'));
-
-      unsubscribeAdminOrders = onSnapshot(allOrdersQuery, (snapshot) => {
-        adminOrders = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        renderAdminOrders();
-      }, () => {
-        adminOrders = [];
-        renderAdminOrders();
+      const userOrdersQuery = query(collection(db, 'orders'), where('userEmail', '==', user.email));
+      userOrdersUnsubscribe = onSnapshot(userOrdersQuery, (snapshot) => {
+        const orders = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        renderUserOrders(orders.reverse());
+      }, (error) => {
+        console.error(error);
+        renderUserOrders([]);
       });
-    }
 
-      ordersList.innerHTML = orders.map((item, index) => `
-        <div class="cart-item">
-          <div class="cart-thumb">✅</div>
-          <div>
-            <h4 style="margin:0 0 4px;">Pedido #${index + 1}</h4>
-            <p class="muted" style="margin:0;font-size:.88rem;">${item.name}</p>
-          </div>
-          <strong>S/ ${item.price.toFixed(2)}</strong>
-        </div>
-      `).join('');
+      if (user.email === ADMIN_EMAIL) {
+        adminPanel.classList.remove('hidden');
+        const adminQuery = query(collection(db, 'orders'));
+        adminOrdersUnsubscribe = onSnapshot(adminQuery, (snapshot) => {
+          const orders = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+          renderAdminOrders(orders.reverse());
+        }, (error) => {
+          console.error(error);
+          renderAdminOrders([]);
+        });
+      } else {
+        adminPanel.classList.add('hidden');
+        renderAdminOrders([]);
+      }
     }
 
     addToCartButtons.forEach(button => {
@@ -1305,7 +1278,6 @@
         cartPanel.classList.remove('hidden');
         renderCart();
       });
-    });
     });
 
     cartToggle.addEventListener('click', () => {
@@ -1326,7 +1298,6 @@
 
       try {
         const total = cart.reduce((sum, item) => sum + item.price, 0);
-
         await addDoc(collection(db, 'orders'), {
           userId: currentUser.uid,
           userEmail: currentUser.email || '',
@@ -1341,12 +1312,14 @@
         renderCart();
         alert('Pedido registrado correctamente.');
       } catch (error) {
+        console.error(error);
         alert('No se pudo registrar el pedido: ' + error.message);
       }
     });
 
     function setUser(user) {
       currentUser = user;
+
       if (user) {
         const displayName = user.displayName || user.email?.split('@')[0] || 'Usuario';
         accountName.textContent = displayName;
@@ -1360,18 +1333,9 @@
         loginMessage.textContent = 'Todavía no has iniciado sesión.';
         registerMessage.textContent = 'Completa tus datos para crear una cuenta real.';
         accountShortcut.textContent = 'Acceder';
-        adminPanel.classList.add('hidden');
       }
 
-      listenUserOrders(user);
-      listenAdminOrders(user);
-    } else {
-        accountName.textContent = 'Invitado';
-        accountEmail.textContent = 'No has iniciado sesión';
-        loginMessage.textContent = 'Todavía no has iniciado sesión.';
-        registerMessage.textContent = 'Completa tus datos para crear una cuenta real.';
-        accountShortcut.textContent = 'Acceder';
-      }
+      startOrderListeners(user);
     }
 
     loginBtn.addEventListener('click', async () => {
@@ -1387,6 +1351,7 @@
         await signInWithEmailAndPassword(auth, email, password);
         navigate('/account');
       } catch (error) {
+        console.error(error);
         alert('No se pudo iniciar sesión: ' + error.message);
       }
     });
@@ -1404,9 +1369,9 @@
       try {
         const cred = await createUserWithEmailAndPassword(auth, email, password);
         await updateProfile(cred.user, { displayName: name });
-        setUser({ ...cred.user, displayName: name });
         navigate('/account');
       } catch (error) {
+        console.error(error);
         alert('No se pudo crear la cuenta: ' + error.message);
       }
     });
@@ -1416,6 +1381,7 @@
         await signInWithPopup(auth, provider);
         navigate('/account');
       } catch (error) {
+        console.error(error);
         alert('No se pudo iniciar con Google: ' + error.message);
       }
     }
@@ -1426,10 +1392,10 @@
     logoutBtn.addEventListener('click', async () => {
       try {
         await signOut(auth);
-        if (unsubscribeUserOrders) unsubscribeUserOrders();
-        if (unsubscribeAdminOrders) unsubscribeAdminOrders();
+        stopOrderListeners();
         navigate('/');
       } catch (error) {
+        console.error(error);
         alert('No se pudo cerrar sesión: ' + error.message);
       }
     });
@@ -1446,8 +1412,8 @@
     });
 
     renderCart();
-    renderOrders();
-    setUser(null);
+    renderUserOrders([]);
+    renderAdminOrders([]);
     renderRoute(location.pathname in routes ? location.pathname : '/');
   </script>
 </body>
