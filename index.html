@@ -6,41 +6,129 @@
   <title>Alonso Bix Store</title>
   <style>
     :root {
-      --bg: #0f0f14;
-      --card: #181821;
-      --soft: #232331;
-      --text: #f4f4f7;
-      --muted: #b7b7c9;
-      --accent: #8b5cf6;
+      --bg: #0b1020;
+      --bg-soft: #121933;
+      --card: rgba(18, 25, 51, 0.78);
+      --card-solid: #161f3d;
+      --text: #f5f7ff;
+      --muted: #a9b2d0;
+      --accent: #7c3aed;
       --accent-2: #22c55e;
+      --accent-3: #06b6d4;
       --danger: #ef4444;
-      --border: #2f2f42;
-      --shadow: 0 12px 30px rgba(0,0,0,.25);
-      --radius: 18px;
+      --warning: #f59e0b;
+      --border: rgba(255,255,255,.10);
+      --shadow: 0 20px 45px rgba(0,0,0,.35);
+      --radius: 24px;
+      --radius-sm: 18px;
+      --max: 1180px;
     }
 
-    * { box-sizing: border-box; }
+    * {
+      box-sizing: border-box;
+      scroll-behavior: smooth;
+    }
 
     body {
       margin: 0;
       font-family: Arial, Helvetica, sans-serif;
-      background: linear-gradient(180deg, #0f0f14 0%, #141420 100%);
+      background:
+        radial-gradient(circle at top left, rgba(124,58,237,.18), transparent 28%),
+        radial-gradient(circle at top right, rgba(6,182,212,.14), transparent 24%),
+        linear-gradient(180deg, #0b1020 0%, #11172b 100%);
       color: var(--text);
     }
 
-    a { color: inherit; text-decoration: none; }
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    img {
+      max-width: 100%;
+      display: block;
+    }
 
     .container {
-      width: min(1120px, 92%);
+      width: min(var(--max), 92%);
       margin: 0 auto;
     }
 
+    .section {
+      padding: 70px 0;
+    }
+
+    .section-title {
+      font-size: clamp(1.8rem, 4vw, 2.8rem);
+      margin: 0 0 12px;
+    }
+
+    .section-text {
+      color: var(--muted);
+      max-width: 60ch;
+      line-height: 1.65;
+      margin: 0;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 9px 14px;
+      border-radius: 999px;
+      font-size: .9rem;
+      background: rgba(255,255,255,.06);
+      border: 1px solid rgba(255,255,255,.08);
+      color: #fff;
+    }
+
+    .card {
+      background: var(--card);
+      backdrop-filter: blur(16px);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+
+    .btn {
+      border: 0;
+      cursor: pointer;
+      border-radius: 999px;
+      padding: 13px 20px;
+      font-weight: 700;
+      transition: .25s ease;
+      font-size: .96rem;
+    }
+
+    .btn:hover {
+      transform: translateY(-2px);
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent), #5b21b6);
+      color: #fff;
+      box-shadow: 0 14px 24px rgba(124,58,237,.26);
+    }
+
+    .btn-secondary {
+      background: rgba(255,255,255,.04);
+      border: 1px solid var(--border);
+      color: var(--text);
+    }
+
+    .btn-success {
+      background: linear-gradient(135deg, var(--accent-2), #15803d);
+      color: #fff;
+      box-shadow: 0 14px 24px rgba(34,197,94,.24);
+    }
+
+    /* HEADER */
     header {
       position: sticky;
       top: 0;
-      z-index: 20;
-      backdrop-filter: blur(10px);
-      background: rgba(15,15,20,.82);
+      z-index: 50;
+      backdrop-filter: blur(16px);
+      background: rgba(11,16,32,.74);
       border-bottom: 1px solid rgba(255,255,255,.06);
     }
 
@@ -48,223 +136,227 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 16px 0;
       gap: 16px;
+      padding: 16px 0;
     }
 
     .brand {
       display: flex;
       align-items: center;
       gap: 12px;
+      font-size: 1.12rem;
       font-weight: 800;
-      letter-spacing: .5px;
-      font-size: 1.15rem;
+      letter-spacing: .4px;
     }
 
     .logo {
-      width: 42px;
-      height: 42px;
-      border-radius: 12px;
+      width: 44px;
+      height: 44px;
       display: grid;
       place-items: center;
-      background: linear-gradient(135deg, var(--accent), #4f46e5);
-      box-shadow: var(--shadow);
+      border-radius: 14px;
+      background: linear-gradient(135deg, var(--accent), var(--accent-3));
+      box-shadow: 0 12px 24px rgba(124,58,237,.28);
       font-weight: 900;
     }
 
     .nav-links {
       display: flex;
-      gap: 18px;
+      align-items: center;
+      gap: 20px;
       color: var(--muted);
       font-size: .96rem;
     }
 
-    .btn {
-      border: 0;
-      cursor: pointer;
-      border-radius: 999px;
-      padding: 12px 18px;
-      font-weight: 700;
-      transition: .25s ease;
+    .nav-links a:hover {
+      color: #fff;
     }
 
-    .btn-primary {
-      background: linear-gradient(135deg, var(--accent), #6d28d9);
-      color: white;
-    }
-
-    .btn-primary:hover { transform: translateY(-2px); }
-
-    .btn-secondary {
-      background: transparent;
-      color: var(--text);
-      border: 1px solid var(--border);
-    }
-
+    /* HERO */
     .hero {
-      padding: 72px 0 36px;
+      padding: 72px 0 30px;
+    }
+
+    .hero-grid {
       display: grid;
       grid-template-columns: 1.2fr .8fr;
-      gap: 28px;
+      gap: 26px;
       align-items: center;
     }
 
-    .hero-card, .product-card, .cart-box, .info-box {
-      background: rgba(24,24,33,.9);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      box-shadow: var(--shadow);
-    }
-
     .hero-copy h1 {
-      font-size: clamp(2.2rem, 5vw, 4.4rem);
-      line-height: .98;
-      margin: 0 0 14px;
+      font-size: clamp(2.7rem, 5vw, 5rem);
+      line-height: .95;
+      margin: 16px 0 18px;
+      letter-spacing: -1px;
     }
 
     .hero-copy p {
       color: var(--muted);
-      font-size: 1.05rem;
-      line-height: 1.6;
+      font-size: 1.06rem;
+      line-height: 1.7;
       max-width: 60ch;
-      margin-bottom: 22px;
+      margin-bottom: 26px;
     }
 
     .hero-actions {
       display: flex;
       gap: 12px;
       flex-wrap: wrap;
-    }
-
-    .hero-card {
-      padding: 26px;
-      background:
-        radial-gradient(circle at top right, rgba(139,92,246,.28), transparent 35%),
-        rgba(24,24,33,.95);
+      margin-bottom: 28px;
     }
 
     .hero-stats {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
-      gap: 12px;
-      margin-top: 20px;
+      gap: 14px;
     }
 
     .stat {
-      background: rgba(255,255,255,.03);
-      border: 1px solid rgba(255,255,255,.06);
-      border-radius: 14px;
-      padding: 14px;
+      padding: 18px;
+      border-radius: var(--radius-sm);
+      background: rgba(255,255,255,.04);
+      border: 1px solid rgba(255,255,255,.08);
     }
 
     .stat strong {
       display: block;
-      font-size: 1.2rem;
+      font-size: 1.4rem;
       margin-bottom: 6px;
     }
 
     .stat span {
       color: var(--muted);
-      font-size: .9rem;
+      font-size: .92rem;
     }
 
-    .mockup {
-      padding: 18px;
+    .hero-showcase {
+      padding: 20px;
     }
 
-    .mockup-screen {
-      border-radius: 24px;
-      min-height: 420px;
-      background:
-        linear-gradient(160deg, rgba(139,92,246,.20), rgba(34,197,94,.10)),
-        linear-gradient(180deg, #1e1e2d 0%, #11111b 100%);
-      padding: 22px;
+    .showcase-screen {
+      min-height: 500px;
+      border-radius: 28px;
+      overflow: hidden;
+      padding: 24px;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-      overflow: hidden;
-      position: relative;
+      background:
+        radial-gradient(circle at top right, rgba(124,58,237,.28), transparent 34%),
+        radial-gradient(circle at bottom left, rgba(6,182,212,.18), transparent 26%),
+        linear-gradient(180deg, #1a2348 0%, #11172a 100%);
+      border: 1px solid rgba(255,255,255,.08);
     }
 
-    .pill {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
+    .featured-box {
+      padding: 24px;
+      border-radius: 24px;
+      background: rgba(255,255,255,.06);
+      border: 1px solid rgba(255,255,255,.10);
+    }
+
+    .featured-box h3 {
+      margin: 10px 0 8px;
+      font-size: 1.7rem;
+    }
+
+    .featured-box p {
+      color: var(--muted);
+      line-height: 1.6;
+      margin: 0;
+    }
+
+    .featured-price {
+      margin-top: 18px;
+      font-size: 2rem;
+      font-weight: 900;
+    }
+
+    /* CATEGORIES */
+    .categories-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 18px;
+      margin-top: 30px;
+    }
+
+    .category-card {
+      padding: 24px;
+      min-height: 180px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .category-card::after {
+      content: "";
+      position: absolute;
+      width: 140px;
+      height: 140px;
+      border-radius: 50%;
+      right: -30px;
+      bottom: -30px;
+      background: rgba(255,255,255,.05);
+    }
+
+    .category-icon {
+      width: 54px;
+      height: 54px;
+      display: grid;
+      place-items: center;
+      border-radius: 16px;
+      margin-bottom: 18px;
+      font-size: 1.5rem;
       background: rgba(255,255,255,.08);
       border: 1px solid rgba(255,255,255,.08);
-      color: #fff;
-      border-radius: 999px;
-      padding: 8px 12px;
-      width: fit-content;
-      font-size: .88rem;
     }
 
-    .big-product {
-      background: rgba(255,255,255,.05);
-      border: 1px solid rgba(255,255,255,.08);
-      border-radius: 22px;
-      padding: 22px;
-      margin-top: 18px;
-    }
-
-    .big-product h3 {
+    .category-card h3 {
       margin: 0 0 8px;
-      font-size: 1.6rem;
+      font-size: 1.25rem;
     }
 
-    .big-product p {
-      margin: 0;
+    .category-card p {
+      margin: 0 0 18px;
       color: var(--muted);
-      line-height: 1.5;
+      line-height: 1.6;
     }
 
-    .price-tag {
-      margin-top: 18px;
-      font-size: 1.8rem;
-      font-weight: 800;
-      color: white;
-    }
-
+    /* PRODUCTS */
     .section-head {
       display: flex;
       justify-content: space-between;
       align-items: end;
       gap: 20px;
-      margin: 22px 0 18px;
-    }
-
-    .section-head h2 {
-      margin: 0;
-      font-size: clamp(1.5rem, 3vw, 2.2rem);
+      margin-bottom: 24px;
     }
 
     .filters {
       display: flex;
       gap: 10px;
       flex-wrap: wrap;
-      margin-bottom: 18px;
+      margin-bottom: 24px;
     }
 
     .filter-btn {
-      padding: 10px 14px;
+      padding: 11px 16px;
       border-radius: 999px;
       border: 1px solid var(--border);
-      background: #181821;
+      background: rgba(255,255,255,.04);
       color: var(--text);
       cursor: pointer;
       font-weight: 700;
     }
 
     .filter-btn.active {
-      background: var(--accent);
+      background: linear-gradient(135deg, var(--accent), #5b21b6);
       border-color: transparent;
     }
 
     .products-grid {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
-      gap: 18px;
-      margin-bottom: 44px;
+      gap: 20px;
     }
 
     .product-card {
@@ -274,367 +366,209 @@
     }
 
     .product-image {
-      height: 220px;
-      background: linear-gradient(135deg, #312e81, #111827);
+      height: 240px;
+      background:
+        radial-gradient(circle at top left, rgba(124,58,237,.22), transparent 30%),
+        linear-gradient(135deg, #1f2852, #101625);
       display: grid;
       place-items: center;
       font-size: 3rem;
     }
 
-    .product-image img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-
     .product-content {
-      padding: 18px;
+      padding: 20px;
       display: flex;
       flex-direction: column;
-      gap: 10px;
+      gap: 12px;
       flex: 1;
     }
 
     .product-top {
       display: flex;
       justify-content: space-between;
-      gap: 12px;
       align-items: start;
+      gap: 12px;
     }
 
     .product-title {
       margin: 0;
       font-size: 1.08rem;
+      line-height: 1.35;
     }
 
     .badge {
       padding: 7px 10px;
       border-radius: 999px;
-      font-size: .8rem;
+      font-size: .78rem;
       font-weight: 700;
-      background: rgba(34,197,94,.12);
-      color: #7df0a2;
-      border: 1px solid rgba(34,197,94,.18);
       white-space: nowrap;
+      background: rgba(34,197,94,.14);
+      color: #86efac;
+      border: 1px solid rgba(34,197,94,.18);
     }
 
     .product-desc {
       color: var(--muted);
-      line-height: 1.5;
-      font-size: .94rem;
+      font-size: .95rem;
+      line-height: 1.65;
       flex: 1;
+    }
+
+    .product-meta {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .meta-chip {
+      padding: 8px 10px;
+      border-radius: 999px;
+      font-size: .8rem;
+      background: rgba(255,255,255,.05);
+      border: 1px solid rgba(255,255,255,.06);
+      color: var(--muted);
     }
 
     .product-bottom {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      gap: 12px;
+      gap: 14px;
+      margin-top: 4px;
     }
 
     .product-price {
-      font-size: 1.2rem;
-      font-weight: 800;
-    }
-
-    /* LOGIN PREMIUM */
-    .login-section {
-      min-height: 760px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 40px 0 70px;
-      position: relative;
-    }
-
-    .premium-login {
-      width: 100%;
-      max-width: 460px;
-      padding: 34px 34px 26px;
-      border-radius: 34px;
-      position: relative;
-      background: linear-gradient(180deg, rgba(25,25,34,.96), rgba(18,18,28,.98));
-      border: 1px solid rgba(255,255,255,.07);
-      box-shadow:
-        0 30px 70px rgba(0,0,0,.45),
-        inset 0 1px 0 rgba(255,255,255,.03);
-    }
-
-    .premium-login::before {
-      content: "";
-      position: absolute;
-      inset: 0;
-      border-radius: 34px;
-      pointer-events: none;
-      background:
-        radial-gradient(circle at top left, rgba(255,255,255,.05), transparent 28%),
-        radial-gradient(circle at bottom right, rgba(139,92,246,.08), transparent 32%);
-    }
-
-    .login-close {
-      position: absolute;
-      top: 18px;
-      right: 18px;
-      width: 38px;
-      height: 38px;
-      border: 0;
-      border-radius: 50%;
-      background: transparent;
-      color: #8d8d9f;
-      font-size: 2rem;
-      line-height: 1;
-      cursor: pointer;
-      z-index: 2;
-    }
-
-    .premium-login-header {
-      margin-bottom: 26px;
-      position: relative;
-      z-index: 1;
-    }
-
-    .premium-login-header h2 {
-      margin: 0;
-      font-size: 3rem;
-      line-height: .95;
+      font-size: 1.3rem;
       font-weight: 900;
-      letter-spacing: -.5px;
-      color: #fff;
-      text-transform: uppercase;
     }
 
-    .premium-login-header h2 span {
-      color: #7d7d86;
-    }
-
-    .premium-tabs {
+    /* BENEFITS */
+    .benefits-grid {
       display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 8px;
-      margin-bottom: 20px;
-      background: rgba(255,255,255,.03);
-      border: 1px solid rgba(255,255,255,.05);
-      border-radius: 18px;
-      padding: 6px;
-      position: relative;
-      z-index: 1;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 18px;
+      margin-top: 28px;
     }
 
-    .premium-tab {
-      border: 0;
-      height: 48px;
-      border-radius: 14px;
-      background: transparent;
-      color: #9f9fb0;
-      font-weight: 800;
-      cursor: pointer;
-      text-transform: uppercase;
-      letter-spacing: .6px;
+    .benefit-card {
+      padding: 22px;
     }
 
-    .premium-tab.active {
-      background: #e92222;
-      color: #fff;
-      box-shadow: 0 12px 24px rgba(233,34,34,.3);
+    .benefit-card h3 {
+      margin: 14px 0 8px;
+      font-size: 1.05rem;
     }
 
-    .premium-field {
-      height: 64px;
-      border-radius: 18px;
-      background: #09090d;
-      border: 1px solid rgba(255,255,255,.06);
-      display: flex;
-      align-items: center;
-      gap: 14px;
-      padding: 0 18px;
-      margin-bottom: 16px;
-      position: relative;
-      z-index: 1;
+    .benefit-card p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.6;
+      font-size: .94rem;
     }
 
-    .premium-icon {
-      width: 24px;
-      text-align: center;
-      font-size: 1rem;
-      opacity: .7;
+    /* LOGIN + CART */
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: .9fr 1.1fr;
+      gap: 22px;
+      align-items: start;
     }
 
-    .premium-field input {
-      width: 100%;
-      border: 0;
-      outline: none;
-      background: transparent;
-      color: #fff;
-      font-size: .98rem;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: .6px;
+    .login-panel,
+    .cart-box,
+    .info-box {
+      padding: 24px;
     }
 
-    .premium-field input::placeholder {
-      color: #8e8e9e;
+    .login-panel h2,
+    .cart-box h2,
+    .info-box h2 {
+      margin-top: 0;
+      margin-bottom: 10px;
+      font-size: 1.5rem;
     }
 
-    .premium-submit {
-      width: 100%;
-      height: 58px;
-      border: 0;
-      border-radius: 18px;
-      background: #e92222;
-      color: #fff;
-      font-size: 1rem;
-      font-weight: 900;
-      letter-spacing: .8px;
-      cursor: pointer;
-      margin-top: 6px;
-      box-shadow: 0 16px 30px rgba(233,34,34,.28);
-      text-transform: uppercase;
-      position: relative;
-      z-index: 1;
+    .login-panel p,
+    .cart-box p,
+    .info-box p {
+      color: var(--muted);
+      line-height: 1.6;
     }
 
-    .premium-divider {
-      margin: 26px 0 22px;
-      display: flex;
-      align-items: center;
-      gap: 14px;
-      color: #5f6070;
-      font-size: .78rem;
-      font-weight: 800;
-      letter-spacing: 1.2px;
-      text-transform: uppercase;
-      position: relative;
-      z-index: 1;
-    }
-
-    .premium-divider::before,
-    .premium-divider::after {
-      content: "";
-      flex: 1;
-      height: 1px;
-      background: rgba(255,255,255,.08);
-    }
-
-    .premium-google {
-      width: 100%;
-      height: 58px;
-      border: 0;
-      border-radius: 18px;
-      background: #26262f;
-      color: #fff;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+    .login-form {
+      margin-top: 18px;
+      display: grid;
       gap: 12px;
-      font-weight: 800;
-      letter-spacing: .5px;
-      cursor: pointer;
-      text-transform: uppercase;
-      position: relative;
-      z-index: 1;
     }
 
-    .google-g {
-      display: inline-grid;
-      place-items: center;
-      width: 26px;
-      height: 26px;
-      border-radius: 50%;
-      background: #fff;
-      color: #ea4335;
-      font-weight: 900;
-      font-family: Arial, sans-serif;
-    }
-
-    .premium-switch-text {
-      margin: 26px 0 12px;
-      text-align: center;
-      color: #5f6070;
-      font-size: .82rem;
-      font-weight: 800;
-      letter-spacing: .8px;
-      text-transform: uppercase;
-      position: relative;
-      z-index: 1;
-    }
-
-    .premium-switch-text button {
-      background: none;
-      border: 0;
-      color: #fff;
-      font-weight: 900;
-      cursor: pointer;
-      margin-left: 6px;
-    }
-
-    .premium-logout {
+    .login-form input {
       width: 100%;
-      height: 52px;
-      border-radius: 18px;
-      border: 1px solid rgba(255,255,255,.08);
-      background: transparent;
-      color: #fff;
-      font-weight: 800;
-      cursor: pointer;
-      margin-bottom: 12px;
-      position: relative;
-      z-index: 1;
+      padding: 14px 16px;
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,.04);
+      color: white;
+      outline: none;
+    }
+
+    .login-form input:focus {
+      border-color: rgba(124,58,237,.7);
+      box-shadow: 0 0 0 4px rgba(124,58,237,.15);
+    }
+
+    .login-actions {
+      display: grid;
+      gap: 10px;
+      margin-top: 6px;
     }
 
     .login-status {
-      margin-top: 0;
+      margin-top: 14px;
       padding: 14px 16px;
-      border-radius: 16px;
+      border-radius: 14px;
       background: rgba(255,255,255,.04);
-      border: 1px solid rgba(255,255,255,.05);
-      color: #c8c8d3;
-      text-align: center;
+      border: 1px solid rgba(255,255,255,.06);
+      color: var(--muted);
       font-size: .95rem;
-      position: relative;
-      z-index: 1;
     }
 
     .cart-layout {
       display: grid;
-      grid-template-columns: 1.3fr .7fr;
+      grid-template-columns: 1.2fr .8fr;
       gap: 20px;
-      margin: 24px 0 50px;
-    }
-
-    .cart-box, .info-box {
-      padding: 20px;
     }
 
     .cart-items {
       display: flex;
       flex-direction: column;
       gap: 14px;
-      margin-top: 16px;
+      margin-top: 18px;
     }
 
     .cart-item {
       display: grid;
-      grid-template-columns: 72px 1fr auto;
+      grid-template-columns: 74px 1fr auto;
       gap: 14px;
       align-items: center;
-      padding: 12px;
-      border-radius: 16px;
-      background: rgba(255,255,255,.03);
+      padding: 14px;
+      border-radius: 18px;
+      background: rgba(255,255,255,.04);
       border: 1px solid rgba(255,255,255,.06);
     }
 
     .cart-thumb {
-      width: 72px;
-      height: 72px;
-      border-radius: 14px;
+      width: 74px;
+      height: 74px;
+      border-radius: 18px;
       display: grid;
       place-items: center;
-      background: linear-gradient(135deg, #27273a, #101018);
       font-size: 1.8rem;
+      background: linear-gradient(135deg, #212b59, #0f1528);
     }
 
     .cart-item h4 {
       margin: 0 0 6px;
+      font-size: 1rem;
     }
 
     .cart-item p {
@@ -646,21 +580,21 @@
     .summary-row {
       display: flex;
       justify-content: space-between;
-      margin: 12px 0;
+      margin: 14px 0;
       color: var(--muted);
     }
 
     .summary-total {
       color: white;
       font-size: 1.2rem;
-      font-weight: 800;
-      padding-top: 14px;
+      font-weight: 900;
+      padding-top: 16px;
       border-top: 1px solid var(--border);
       margin-top: 16px;
     }
 
     footer {
-      padding: 26px 0 42px;
+      padding: 30px 0 42px;
       color: var(--muted);
       border-top: 1px solid rgba(255,255,255,.06);
     }
@@ -672,17 +606,21 @@
       flex-wrap: wrap;
     }
 
-    @media (max-width: 960px) {
-      .hero,
+    @media (max-width: 1100px) {
+      .products-grid,
+      .categories-grid,
+      .benefits-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .dashboard-grid,
       .cart-layout,
-      .products-grid {
+      .hero-grid {
         grid-template-columns: 1fr;
       }
+    }
 
-      .hero {
-        padding-top: 44px;
-      }
-
+    @media (max-width: 720px) {
       .nav {
         flex-wrap: wrap;
       }
@@ -690,11 +628,13 @@
       .nav-links {
         width: 100%;
         justify-content: center;
+        flex-wrap: wrap;
       }
-    }
 
-    @media (max-width: 640px) {
-      .hero-stats {
+      .hero-stats,
+      .products-grid,
+      .categories-grid,
+      .benefits-grid {
         grid-template-columns: 1fr;
       }
 
@@ -707,19 +647,9 @@
         grid-template-columns: 1fr;
       }
 
-      .premium-login {
-        padding: 26px 20px 22px;
-        border-radius: 26px;
-      }
-
-      .premium-login-header h2 {
-        font-size: 2.25rem;
-      }
-
-      .premium-field,
-      .premium-submit,
-      .premium-google {
-        height: 54px;
+      .product-bottom {
+        flex-direction: column;
+        align-items: start;
       }
     }
   </style>
@@ -729,12 +659,15 @@
     <div class="container nav">
       <div class="brand">
         <div class="logo">AB</div>
-        <span>ALONSO BIX</span>
+        <span>ALONSO BIX STORE</span>
       </div>
 
       <nav class="nav-links">
+        <a href="#inicio">Inicio</a>
+        <a href="#categorias">Categorías</a>
         <a href="#productos">Productos</a>
-        <a href="#login">Login</a>
+        <a href="#beneficios">Beneficios</a>
+        <a href="#cuenta">Cuenta</a>
         <a href="#carrito">Carrito</a>
       </nav>
 
@@ -742,175 +675,317 @@
     </div>
   </header>
 
-  <main class="container">
-    <section class="hero">
-      <div class="hero-copy">
-        <div class="pill">🔥 Nueva colección</div>
-        <h1>Venta de items, cuentas, crias de Rakion Latino.</h1>
-        <p>
-          Venta exclusiva de items.
-          Todo en un solo HTML, fácil de editar y listo para subir a Netlify.
-        </p>
-        <div class="hero-actions">
-          <a class="btn btn-primary" href="#productos">Ver productos</a>
-          <a class="btn btn-secondary" href="#carrito">Ir al carrito</a>
-        </div>
+  <main>
+    <section class="hero" id="inicio">
+      <div class="container hero-grid">
+        <div class="hero-copy">
+          <div class="pill">🔥 Tienda renovada</div>
+          <h1>Compra cuentas, items y crías de Rakion con una página que sí se ve profesional.</h1>
+          <p>
+            Diseñé esta versión para que todo esté más limpio, separado por secciones
+            y con una imagen moderna. Ahora el usuario entiende rápido qué vendes,
+            dónde iniciar sesión y cómo comprar sin sentir que todo está mezclado.
+          </p>
 
-        <div class="hero-stats">
-          <div class="stat">
-            <strong>+0</strong>
-            <span>Pedidos este mes</span>
+          <div class="hero-actions">
+            <a class="btn btn-primary" href="#productos">Ver productos</a>
+            <a class="btn btn-secondary" href="#cuenta">Ir al login</a>
           </div>
-          <div class="stat">
-            <strong>24h</strong>
-            <span>Envío rápido</span>
-          </div>
-          <div class="stat">
-            <strong>100%</strong>
-            <span>Diseño editable</span>
-          </div>
-        </div>
-      </div>
 
-      <div class="hero-card mockup">
-        <div class="mockup-screen">
-          <div>
-            <div class="pill">Cuentas</div>
-            <div class="big-product">
-              <h3>Ofertas del Mes</h3>
-              <p>Cuenta en venta del 2005 con crias para veneno.</p>
-              <div class="price-tag">S/ 250.00</div>
+          <div class="hero-stats">
+            <div class="stat card">
+              <strong>+100%</strong>
+              <span>Mejor presentación visual</span>
+            </div>
+            <div class="stat card">
+              <strong>24/7</strong>
+              <span>Disponible para pedidos</span>
+            </div>
+            <div class="stat card">
+              <strong>Ordenado</strong>
+              <span>Secciones separadas y limpias</span>
             </div>
           </div>
-          <button class="btn btn-primary">Agregar al carrito</button>
-        </div>
-      </div>
-    </section>
-
-    <section id="productos">
-      <div class="section-head">
-        <div>
-          <h2>Productos de Rakion Latino</h2>
-        </div>
-      </div>
-
-      <div class="filters">
-        <button class="filter-btn active" data-filter="all">Todo</button>
-        <button class="filter-btn" data-filter="items">Items</button>
-        <button class="filter-btn" data-filter="cuentas">Cuentas</button>
-        <button class="filter-btn" data-filter="crias">Crias</button>
-      </div>
-
-      <div class="products-grid" id="productsGrid">
-        <article class="product-card" data-category="cuentas">
-          <div class="product-image">
-            <img src="cuenta.png" alt="Cuenta en venta del 2005 con crias venenos">
-          </div>
-          <div class="product-content">
-            <div class="product-top">
-              <h3 class="product-title">Cuenta en venta del 2005 con crias venenos</h3>
-              <span class="badge">Top ventas</span>
-            </div>
-            <p class="product-desc">Cuenta bonita para que no empieces de 0.</p>
-            <div class="product-bottom">
-              <span class="product-price">S/ 250.00</span>
-              <button
-                class="btn btn-primary add-to-cart"
-                data-name="Cuenta en venta del 2005 con crias venenos"
-                data-price="250.00"
-              >
-                Agregar
-              </button>
-            </div>
-          </div>
-        </article>
-      </div>
-    </section>
-
-    <section id="login" class="login-section">
-      <div class="premium-login">
-        <button class="login-close" type="button" aria-label="Cerrar">×</button>
-
-        <div class="premium-login-header">
-          <h2 id="authTitle">ÚNETE <span>PREMIUM</span></h2>
         </div>
 
-        <div class="premium-tabs">
-          <button class="premium-tab active" id="tabRegister" type="button">Crear cuenta</button>
-          <button class="premium-tab" id="tabLogin" type="button">Inicia sesión</button>
-        </div>
-
-        <div class="premium-field" id="usernameWrap">
-          <span class="premium-icon">👤</span>
-          <input type="text" id="username" placeholder="NOMBRE DE USUARIO">
-        </div>
-
-        <div class="premium-field">
-          <span class="premium-icon">✉</span>
-          <input type="email" id="email" placeholder="CORREO ELECTRÓNICO">
-        </div>
-
-        <div class="premium-field">
-          <span class="premium-icon">🔑</span>
-          <input type="password" id="password" placeholder="CONTRASEÑA">
-        </div>
-
-        <button class="premium-submit" id="authActionBtn" type="button">
-          CREAR CUENTA
-        </button>
-
-        <div class="premium-divider">
-          <span>O CONTINÚA CON</span>
-        </div>
-
-        <button class="premium-google" type="button" id="googleLoginBtn">
-          <span class="google-g">G</span>
-          <span>GOOGLE ACCOUNT</span>
-        </button>
-
-        <p class="premium-switch-text" id="switchText">
-          ¿YA ERES MIEMBRO?
-          <button type="button" id="switchModeBtn">Inicia Sesión</button>
-        </p>
-
-        <button class="premium-logout" onclick="logout()" type="button">
-          Cerrar sesión
-        </button>
-
-        <div class="login-status" id="loginStatus">No has iniciado sesión.</div>
-      </div>
-    </section>
-
-    <section id="carrito" class="cart-layout">
-      <div class="cart-box">
-        <h2>Carrito</h2>
-        <p style="color: var(--muted);">Lista de deseos.</p>
-        <div class="cart-items" id="cartItems">
-          <div class="cart-item">
-            <div class="cart-thumb">🛒</div>
+        <div class="hero-showcase card">
+          <div class="showcase-screen">
             <div>
-              <h4>Tu carrito está vacío</h4>
-              <p>Agrega productos para ver el resumen aquí.</p>
+              <div class="pill">Cuenta destacada</div>
+              <div class="featured-box">
+                <h3>Ofertas del mes</h3>
+                <p>
+                  Cuenta del 2005 con crías y progreso listo para seguir jugando sin empezar desde cero.
+                </p>
+                <div class="featured-price">S/ 250.00</div>
+              </div>
             </div>
-            <strong>S/ 0.00</strong>
+
+            <button
+              class="btn btn-primary add-to-cart"
+              data-name="Cuenta destacada del mes"
+              data-price="250.00"
+            >
+              Agregar al carrito
+            </button>
           </div>
         </div>
       </div>
+    </section>
 
-      <aside class="info-box">
-        <h2>Resumen</h2>
-        <div class="summary-row"><span>Subtotal</span><strong id="subtotal">S/ 0.00</strong></div>
-        <div class="summary-row"><span>Envío</span><strong id="shipping">S/ 0.00</strong></div>
-        <div class="summary-row summary-total"><span>Total</span><strong id="total">S/ 0.00</strong></div>
-        <button class="btn btn-primary" style="width:100%; margin-top: 16px;" id="checkoutBtn">Realizar pedido</button>
-      </aside>
+    <section class="section" id="categorias">
+      <div class="container">
+        <h2 class="section-title">Categorías principales</h2>
+        <p class="section-text">
+          Todo está dividido para que tu cliente ubique rápido qué quiere comprar.
+        </p>
+
+        <div class="categories-grid">
+          <article class="category-card card">
+            <div class="category-icon">👑</div>
+            <h3>Cuentas</h3>
+            <p>
+              Cuentas avanzadas, con tiempo invertido, progreso real y listas para usar.
+            </p>
+            <a href="#productos" class="btn btn-secondary">Ver cuentas</a>
+          </article>
+
+          <article class="category-card card">
+            <div class="category-icon">⚔️</div>
+            <h3>Items</h3>
+            <p>
+              Items especiales para mejorar tu experiencia de juego y destacar más rápido.
+            </p>
+            <a href="#productos" class="btn btn-secondary">Ver items</a>
+          </article>
+
+          <article class="category-card card">
+            <div class="category-icon">🐉</div>
+            <h3>Crías</h3>
+            <p>
+              Crías raras o útiles para builds específicas y cuentas enfocadas en veneno.
+            </p>
+            <a href="#productos" class="btn btn-secondary">Ver crías</a>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="productos">
+      <div class="container">
+        <div class="section-head">
+          <div>
+            <h2 class="section-title">Productos de Rakion Latino</h2>
+            <p class="section-text">
+              Cada producto se ve como tarjeta independiente para que la tienda se note más premium.
+            </p>
+          </div>
+        </div>
+
+        <div class="filters">
+          <button class="filter-btn active" data-filter="all">Todo</button>
+          <button class="filter-btn" data-filter="items">Items</button>
+          <button class="filter-btn" data-filter="cuentas">Cuentas</button>
+          <button class="filter-btn" data-filter="crias">Crías</button>
+        </div>
+
+        <div class="products-grid" id="productsGrid">
+          <article class="product-card card" data-category="cuentas">
+            <div class="product-image">
+              <img src="cuenta.png" alt="Cuenta en venta del 2005 con crías venenos">
+            </div>
+            <div class="product-content">
+              <div class="product-top">
+                <h3 class="product-title">Cuenta en venta del 2005 con crías veneno</h3>
+                <span class="badge">Top ventas</span>
+              </div>
+
+              <p class="product-desc">
+                Cuenta completa para jugadores que quieren empezar con ventaja y no desde cero.
+              </p>
+
+              <div class="product-meta">
+                <span class="meta-chip">Cuenta premium</span>
+                <span class="meta-chip">Lista para usar</span>
+              </div>
+
+              <div class="product-bottom">
+                <span class="product-price">S/ 250.00</span>
+                <button
+                  class="btn btn-primary add-to-cart"
+                  data-name="Cuenta en venta del 2005 con crías veneno"
+                  data-price="250.00"
+                >
+                  Agregar
+                </button>
+              </div>
+            </div>
+          </article>
+
+          <article class="product-card card" data-category="items">
+            <div class="product-image">⚔️</div>
+            <div class="product-content">
+              <div class="product-top">
+                <h3 class="product-title">Pack de items especiales</h3>
+                <span class="badge">Nuevo</span>
+              </div>
+
+              <p class="product-desc">
+                Paquete ideal para mejorar el rendimiento de tu cuenta y avanzar más rápido.
+              </p>
+
+              <div class="product-meta">
+                <span class="meta-chip">Entrega rápida</span>
+                <span class="meta-chip">Uso inmediato</span>
+              </div>
+
+              <div class="product-bottom">
+                <span class="product-price">S/ 80.00</span>
+                <button
+                  class="btn btn-primary add-to-cart"
+                  data-name="Pack de items especiales"
+                  data-price="80.00"
+                >
+                  Agregar
+                </button>
+              </div>
+            </div>
+          </article>
+
+          <article class="product-card card" data-category="crias">
+            <div class="product-image">🐉</div>
+            <div class="product-content">
+              <div class="product-top">
+                <h3 class="product-title">Cría especial de apoyo</h3>
+                <span class="badge">Recomendada</span>
+              </div>
+
+              <p class="product-desc">
+                Cría útil para complementar builds específicas y darle más valor a tu cuenta.
+              </p>
+
+              <div class="product-meta">
+                <span class="meta-chip">Rareza alta</span>
+                <span class="meta-chip">Buena combinación</span>
+              </div>
+
+              <div class="product-bottom">
+                <span class="product-price">S/ 60.00</span>
+                <button
+                  class="btn btn-primary add-to-cart"
+                  data-name="Cría especial de apoyo"
+                  data-price="60.00"
+                >
+                  Agregar
+                </button>
+              </div>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="beneficios">
+      <div class="container">
+        <h2 class="section-title">Por qué esta tienda se ve más profesional</h2>
+        <p class="section-text">
+          La clave era separar visualmente cada parte y no meter todo junto en un solo bloque.
+        </p>
+
+        <div class="benefits-grid">
+          <article class="benefit-card card">
+            <div class="category-icon">🎨</div>
+            <h3>Diseño moderno</h3>
+            <p>Colores más limpios, sombras suaves y tarjetas con mejor jerarquía visual.</p>
+          </article>
+
+          <article class="benefit-card card">
+            <div class="category-icon">🧩</div>
+            <h3>Secciones separadas</h3>
+            <p>Hero, categorías, productos, cuenta y carrito van por partes para que no se mezcle todo.</p>
+          </article>
+
+          <article class="benefit-card card">
+            <div class="category-icon">🛒</div>
+            <h3>Compra más clara</h3>
+            <p>El usuario entiende rápido qué comprar, cuánto cuesta y dónde revisar su carrito.</p>
+          </article>
+
+          <article class="benefit-card card">
+            <div class="category-icon">🔐</div>
+            <h3>Acceso ordenado</h3>
+            <p>El login tiene su propio espacio, como una tienda seria y bien presentada.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="cuenta">
+      <div class="container dashboard-grid">
+        <div class="login-panel card">
+          <div class="pill">Acceso de usuario</div>
+          <h2>Inicia sesión o crea tu cuenta</h2>
+          <p>
+            Esta sección está separada para que el acceso no estorbe al catálogo.
+            Se ve mucho más limpia y profesional que tenerlo mezclado con productos.
+          </p>
+
+          <div class="login-form">
+            <input type="email" id="email" placeholder="Correo electrónico">
+            <input type="password" id="password" placeholder="Contraseña">
+
+            <div class="login-actions">
+              <button class="btn btn-primary" onclick="register()">Registrarse</button>
+              <button class="btn btn-secondary" onclick="login()">Iniciar sesión</button>
+              <button class="btn btn-secondary" onclick="logout()">Cerrar sesión</button>
+            </div>
+          </div>
+
+          <div class="login-status" id="loginStatus">No has iniciado sesión.</div>
+        </div>
+
+        <div id="carrito">
+          <div class="cart-layout">
+            <div class="cart-box card">
+              <div class="pill">Tu pedido</div>
+              <h2>Carrito de compras</h2>
+              <p>Todo lo que agregues aparecerá aquí de forma clara y ordenada.</p>
+
+              <div class="cart-items" id="cartItems">
+                <div class="cart-item">
+                  <div class="cart-thumb">🛒</div>
+                  <div>
+                    <h4>Tu carrito está vacío</h4>
+                    <p>Agrega productos para ver el resumen aquí.</p>
+                  </div>
+                  <strong>S/ 0.00</strong>
+                </div>
+              </div>
+            </div>
+
+            <aside class="info-box card">
+              <div class="pill">Resumen</div>
+              <h2>Total de compra</h2>
+              <p>Antes de enviar el pedido por WhatsApp, revisa tus montos.</p>
+
+              <div class="summary-row"><span>Subtotal</span><strong id="subtotal">S/ 0.00</strong></div>
+              <div class="summary-row"><span>Envío</span><strong id="shipping">S/ 0.00</strong></div>
+              <div class="summary-row summary-total"><span>Total</span><strong id="total">S/ 0.00</strong></div>
+
+              <button class="btn btn-success" style="width:100%; margin-top: 18px;" id="checkoutBtn">
+                Realizar pedido
+              </button>
+            </aside>
+          </div>
+        </div>
+      </div>
     </section>
   </main>
 
   <footer>
     <div class="container footer-wrap">
       <span>© 2026 Alonso Bix Store. Todos los derechos reservados.</span>
-      <span>Hecho para vender productos de Rakion Latino con estilo.</span>
+      <span>Diseño renovado para verse más moderno, ordenado y profesional.</span>
     </div>
   </footer>
 
@@ -990,7 +1065,10 @@
       }
 
       const phone = '51999999999';
-      const message = cart.map((item, i) => `${i + 1}. ${item.name} - S/ ${item.price.toFixed(2)}`).join('%0A');
+      const message = cart
+        .map((item, i) => `${i + 1}. ${item.name} - S/ ${item.price.toFixed(2)}`)
+        .join('%0A');
+
       const total = cart.reduce((sum, item) => sum + item.price, 0) + 15;
       const url = `https://wa.me/${phone}?text=Hola,%20quiero%20pedir:%0A${message}%0A%0ATotal:%20S/%20${total.toFixed(2)}`;
       window.open(url, '_blank');
@@ -1004,9 +1082,7 @@
       createUserWithEmailAndPassword,
       signInWithEmailAndPassword,
       signOut,
-      onAuthStateChanged,
-      GoogleAuthProvider,
-      signInWithPopup
+      onAuthStateChanged
     } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
     const firebaseConfig = {
@@ -1021,70 +1097,7 @@
 
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
-    const provider = new GoogleAuthProvider();
-
     const loginStatus = document.getElementById("loginStatus");
-    const googleLoginBtn = document.getElementById("googleLoginBtn");
-
-    const tabRegister = document.getElementById("tabRegister");
-    const tabLogin = document.getElementById("tabLogin");
-    const authActionBtn = document.getElementById("authActionBtn");
-    const authTitle = document.getElementById("authTitle");
-    const switchText = document.getElementById("switchText");
-    const usernameWrap = document.getElementById("usernameWrap");
-    const loginClose = document.querySelector(".login-close");
-
-    let authMode = "register";
-
-    function bindSwitchButton() {
-      const btn = document.getElementById("switchModeBtn");
-      if (btn) {
-        btn.onclick = () => {
-          setAuthMode(authMode === "register" ? "login" : "register");
-        };
-      }
-    }
-
-    function setAuthMode(mode) {
-      authMode = mode;
-
-      if (mode === "register") {
-        tabRegister.classList.add("active");
-        tabLogin.classList.remove("active");
-        authTitle.innerHTML = 'ÚNETE <span>PREMIUM</span>';
-        authActionBtn.textContent = "CREAR CUENTA";
-        switchText.innerHTML = '¿YA ERES MIEMBRO?<button type="button" id="switchModeBtn">Inicia Sesión</button>';
-        usernameWrap.style.display = "flex";
-      } else {
-        tabLogin.classList.add("active");
-        tabRegister.classList.remove("active");
-        authTitle.innerHTML = 'HOLA <span>DE NUEVO</span>';
-        authActionBtn.textContent = "INICIAR SESIÓN";
-        switchText.innerHTML = '¿NO TIENES CUENTA?<button type="button" id="switchModeBtn">Regístrate</button>';
-        usernameWrap.style.display = "none";
-      }
-
-      bindSwitchButton();
-    }
-
-    tabRegister.addEventListener("click", () => setAuthMode("register"));
-    tabLogin.addEventListener("click", () => setAuthMode("login"));
-
-    authActionBtn.addEventListener("click", async () => {
-      if (authMode === "register") {
-        await register();
-      } else {
-        await login();
-      }
-    });
-
-    googleLoginBtn.addEventListener("click", async () => {
-      await loginWithGoogle();
-    });
-
-    loginClose.addEventListener("click", () => {
-      document.getElementById("login").style.display = "none";
-    });
 
     window.register = async () => {
       const email = document.getElementById("email").value.trim();
@@ -1120,15 +1133,6 @@
       }
     };
 
-    window.loginWithGoogle = async () => {
-      try {
-        await signInWithPopup(auth, provider);
-        alert("Sesión iniciada con Google.");
-      } catch (e) {
-        alert(e.message);
-      }
-    };
-
     window.logout = async () => {
       try {
         await signOut(auth);
@@ -1145,8 +1149,6 @@
         loginStatus.textContent = "No has iniciado sesión.";
       }
     });
-
-    setAuthMode("register");
   </script>
 </body>
 </html>
