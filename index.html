@@ -112,23 +112,19 @@
       flex-wrap: nowrap;
     }
 
-    .stack {
+    .topbar .nav {
+      flex: 1;
+    }
+
+    .header-actions {
       display: flex;
       align-items: center;
       gap: 10px;
       flex-wrap: nowrap;
     }
 
-    .stack > * {
+    .header-actions > * {
       flex-shrink: 0;
-    }
-
-    #cartToggle {
-      order: 1;
-    }
-
-    #accountShortcut {
-      order: 2;
     }
 
     .brand {
@@ -607,7 +603,7 @@
         <button class="nav-link" data-route="/account">Mi cuenta</button>
       </nav>
 
-      <div class="stack">
+      <div class="header-actions">
         <button class="user-chip" id="cartToggle" type="button">🛒 0</button>
         <button class="btn btn-secondary" id="accountShortcut">Acceder</button>
       </div>
@@ -1259,4 +1255,3 @@
   </script>
 </body>
 </html>
-
