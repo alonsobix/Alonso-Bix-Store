@@ -1580,8 +1580,37 @@
       }
     });
 
-    editProfileBtn.addEventListener('click', () => {
-      alert('Si quieres, luego conectamos edición real de perfil con Firebase.');
+    editProfileBtn.addEventListener('click', async () => {
+      if (!currentUser) {
+        alert('Primero inicia sesión.');
+        navigate('/login');
+        return;
+      }
+
+      const currentName = currentUser.displayName || currentUser.email?.split('@')[0] || '';
+      const newName = prompt('Escribe tu nuevo nombre de perfil:', currentName);
+
+      if (newName === null) {
+        return;
+      }
+
+      const cleanName = newName.trim();
+      if (!cleanName) {
+        alert('El nombre no puede estar vacío.');
+        return;
+      }
+
+      try {
+        await updateProfile(auth.currentUser, {
+          displayName: cleanName
+        });
+
+        setUser(auth.currentUser);
+        alert('Perfil actualizado correctamente.');
+      } catch (error) {
+        console.error(error);
+        alert('No se pudo actualizar el perfil: ' + error.message);
+      }
     });
 
     onAuthStateChanged(auth, (user) => {
@@ -1599,3 +1628,4 @@
   </script>
 </body>
 </html>
+
