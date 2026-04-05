@@ -1217,6 +1217,8 @@
             <h4 style="margin:0 0 4px;">Pedido #${index + 1}</h4>
             <p class="muted" style="margin:0;font-size:.88rem;">${(order.items || []).map(item => item.name).join(', ')}</p>
             <p class="muted" style="margin:4px 0 0;font-size:.82rem;">Estado: ${order.status || 'pendiente'}</p>
+            ${order.status !== 'cancelado' && order.status !== 'realizado' ? `<button class="btn btn-danger" style="margin-top:8px;padding:8px 12px;font-size:.82rem;" onclick="markOrderCanceled('${order.id}')">Cancelar pedido</button>` : ''}
+            <button class="btn btn-secondary" style="margin-top:8px;padding:8px 12px;font-size:.82rem;" data-chat-user="${order.id}">Abrir chat</button>
           </div>
           <strong>S/ ${Number(order.total || 0).toFixed(2)}</strong>
         </div>
@@ -1246,11 +1248,19 @@
             <p class="muted" style="margin:0;font-size:.88rem;">${order.userName || 'Usuario'} • ${order.userEmail || 'Sin correo'}</p>
             <p class="muted" style="margin:4px 0 0;font-size:.82rem;">${(order.items || []).map(item => item.name).join(', ')}</p>
             <p class="muted" style="margin:4px 0 0;font-size:.82rem;">Estado: ${order.status || 'pendiente'}</p>
-            ${order.status !== 'realizado' ? `
+            ${order.status !== 'cancelado' && order.status !== 'realizado' ? `<button class="btn btn-danger" style="margin-top:8px;padding:8px 12px;font-size:.82rem;" onclick="markOrderCanceled('${order.id}')">Cancelar pedido</button>` : ''}
+            ${order.status !== 'realizado' && order.status !== 'cancelado' ? `
               <button class="btn btn-success" style="margin-top:10px;padding:8px 12px;font-size:.82rem;" onclick="markOrderCompleted('${order.id}')">
                 Pedido realizado
               </button>
+              <button class="btn btn-danger" style="margin-top:10px;padding:8px 12px;font-size:.82rem;" onclick="markOrderCanceled('${order.id}')">
+                Pedido cancelado
+              </button>
+            ` : ''}')">
+                Pedido realizado
+              </button>
             ` : ''}
+            <button class="btn btn-secondary" style="margin-top:8px;padding:8px 12px;font-size:.82rem;" data-chat-admin="${order.id}">Abrir chat</button>
           </div>
           <strong>S/ ${Number(order.total || 0).toFixed(2)}</strong>
         </div>
@@ -1269,6 +1279,19 @@
     }
 
     window.markOrderCompleted = markOrderCompleted;
+
+    async function markOrderCanceled(orderId){
+      try{
+        await updateDoc(doc(db,'orders',orderId),{
+          status:'cancelado'
+        });
+      }catch(e){
+        console.error(e);
+        alert('Error al cancelar pedido');
+      }
+    }
+
+    window.markOrderCanceled = markOrderCanceled;
 
     function renderChatMessages(msgs){
       if(!msgs.length){
@@ -1324,7 +1347,20 @@
         text,
         senderName: currentUser?.displayName || currentUser?.email || 'user',
         senderEmail: currentUser?.email || '',
-        senderRol
+        senderRole: currentUser?.email === ADMIN_EMAIL ? 'admin' : 'user',
+        createdAt: serverTimestamp()
+      });
+
+      chatInput.value='';
+      chatInput.focus();
+    });
+
+    chatInput.addEventListener('keydown', async (e)=>{
+      if(e.key === 'Enter'){
+        e.preventDefault();
+        sendChatBtn.click();
+      }
+    });
 
     function stopOrderListeners() {
       if (userOrdersUnsubscribe) {
