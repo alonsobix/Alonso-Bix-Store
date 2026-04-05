@@ -991,7 +991,30 @@
     </div>
   </footer>
 
-  <script>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js";
+    import {
+      getAuth,
+      GoogleAuthProvider,
+      createUserWithEmailAndPassword,
+      signInWithEmailAndPassword,
+      signInWithPopup,
+      onAuthStateChanged,
+      signOut,
+      updateProfile
+    } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js";
+
+    const firebaseConfig = {
+      apiKey: "TU_API_KEY",
+      authDomain: "TU_PROYECTO.firebaseapp.com",
+      projectId: "TU_PROJECT_ID",
+      appId: "TU_APP_ID"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const provider = new GoogleAuthProvider();
+
     const routes = {
       '/': document.getElementById('route-home'),
       '/login': document.getElementById('route-login'),
@@ -1007,8 +1030,6 @@
     const productCards = document.querySelectorAll('.product');
     const addToCartButtons = document.querySelectorAll('.add-to-cart');
     const cartItems = document.getElementById('cartItems');
-    const subtotalEl = document.getElementById('subtotal');
-    const shippingEl = document.getElementById('shipping');
     const totalEl = document.getElementById('total');
     const checkoutBtn = document.getElementById('checkoutBtn');
     const cartToggle = document.getElementById('cartToggle');
@@ -1122,7 +1143,6 @@
       }
 
       const total = cart.reduce((sum, item) => sum + item.price, 0);
-
       totalEl.textContent = `S/ ${total.toFixed(2)}`;
     }
 
@@ -1178,7 +1198,7 @@
       }
       const phone = '51999999999';
       const lines = cart.map((item, i) => `${i + 1}. ${item.name} - S/ ${item.price.toFixed(2)}`).join('%0A');
-      const total = cart.reduce((sum, item) => sum + item.price, 0) + 15;
+      const total = cart.reduce((sum, item) => sum + item.price, 0);
       const url = `https://wa.me/${phone}?text=Hola,%20quiero%20pedir:%0A${lines}%0A%0ATotal:%20S/%20${total.toFixed(2)}`;
       window.open(url, '_blank');
     });
@@ -1186,62 +1206,88 @@
     function setUser(user) {
       currentUser = user;
       if (user) {
-        accountName.textContent = user.name;
-        accountEmail.textContent = user.email;
-        loginMessage.textContent = `Sesión iniciada como: ${user.email}`;
-        registerMessage.textContent = `Cuenta creada para: ${user.name} (${user.email})`;
-        accountShortcut.textContent = user.name.length > 14 ? user.name.slice(0, 14) + '…' : user.name;
+        const displayName = user.displayName || user.email?.split('@')[0] || 'Usuario';
+        accountName.textContent = displayName;
+        accountEmail.textContent = user.email || 'Sin correo';
+        loginMessage.textContent = `Sesión iniciada como: ${user.email || displayName}`;
+        registerMessage.textContent = `Cuenta activa: ${displayName}`;
+        accountShortcut.textContent = displayName.length > 14 ? displayName.slice(0, 14) + '…' : displayName;
       } else {
         accountName.textContent = 'Invitado';
         accountEmail.textContent = 'No has iniciado sesión';
         loginMessage.textContent = 'Todavía no has iniciado sesión.';
-        registerMessage.textContent = 'Completa tus datos para crear una cuenta demo.';
+        registerMessage.textContent = 'Completa tus datos para crear una cuenta real.';
         accountShortcut.textContent = 'Acceder';
       }
     }
 
-    loginBtn.addEventListener('click', () => {
+    loginBtn.addEventListener('click', async () => {
       const email = document.getElementById('loginEmail').value.trim();
       const password = document.getElementById('loginPassword').value.trim();
+
       if (!email || !password) {
         alert('Completa correo y contraseña.');
         return;
       }
-      setUser({ name: 'Hernán Alonso', email });
-      navigate('/account');
+
+      try {
+        await signInWithEmailAndPassword(auth, email, password);
+        navigate('/account');
+      } catch (error) {
+        alert('No se pudo iniciar sesión: ' + error.message);
+      }
     });
 
-    registerBtn.addEventListener('click', () => {
+    registerBtn.addEventListener('click', async () => {
       const name = document.getElementById('registerName').value.trim();
       const email = document.getElementById('registerEmail').value.trim();
       const password = document.getElementById('registerPassword').value.trim();
+
       if (!name || !email || !password) {
         alert('Completa nombre, correo y contraseña.');
         return;
       }
-      setUser({ name, email });
-      navigate('/account');
+
+      try {
+        const cred = await createUserWithEmailAndPassword(auth, email, password);
+        await updateProfile(cred.user, { displayName: name });
+        setUser({ ...cred.user, displayName: name });
+        navigate('/account');
+      } catch (error) {
+        alert('No se pudo crear la cuenta: ' + error.message);
+      }
     });
 
-    googleLoginBtn.addEventListener('click', () => {
-      setUser({ name: 'Google User', email: 'googleuser@gmail.com' });
-      alert('Demo visual. Aquí conectas Firebase Auth + Google real.');
-      navigate('/account');
-    });
+    async function loginWithGoogle() {
+      try {
+        await signInWithPopup(auth, provider);
+        navigate('/account');
+      } catch (error) {
+        alert('No se pudo iniciar con Google: ' + error.message);
+      }
+    }
 
-    googleRegisterBtn.addEventListener('click', () => {
-      setUser({ name: 'Google User', email: 'googleuser@gmail.com' });
-      alert('Demo visual. Aquí conectas Firebase Auth + Google real.');
-      navigate('/account');
-    });
+    googleLoginBtn.addEventListener('click', loginWithGoogle);
+    googleRegisterBtn.addEventListener('click', loginWithGoogle);
 
-    logoutBtn.addEventListener('click', () => {
-      setUser(null);
-      navigate('/');
+    logoutBtn.addEventListener('click', async () => {
+      try {
+        await signOut(auth);
+        navigate('/');
+      } catch (error) {
+        alert('No se pudo cerrar sesión: ' + error.message);
+      }
     });
 
     editProfileBtn.addEventListener('click', () => {
-      alert('Aquí puedes conectar editar perfil, seguridad y métodos de pago.');
+      alert('Si quieres, luego conectamos edición real de perfil con Firebase.');
+    });
+
+    onAuthStateChanged(auth, (user) => {
+      setUser(user);
+      if (user && location.pathname === '/login') {
+        navigate('/account');
+      }
     });
 
     renderCart();
